@@ -45,7 +45,7 @@ For testing and demonstration purposes I created links manually, via the helper 
 More information on how to use them in the section [Usage](#usage).
 
 Of course, a final production ready app would probably include such a mechanism.
-That is why I added it in the [Upcoming Tasks](#upcoming-tasks) list.
+That is why I added it in the [Improvements](#improvements) list.
 
 ## Usage
 
