@@ -69,7 +69,7 @@ INVENIO_TOKEN={YOUR_INVENIO_API_ACCESS_TOKEN}
    The dependencies of the root folder are not mandatory, but can be useful for developers.
    I suggest installing them anyways.
    Besides that, you must install the server and webclient dependencies.<br />
-   To do so `cd` in to the `server/` directory and run the command `yarn`, afterwards do the same inside the `webclient/` directory.
+   To do so `cd` into the `server/` directory and run the command `yarn`, afterwards do the same inside the `webclient/` directory.
 
 4. You are now ready to run both, the server and the webclient.
    I'd suggest opening two terminals in the root folder.
@@ -79,6 +79,10 @@ INVENIO_TOKEN={YOUR_INVENIO_API_ACCESS_TOKEN}
 
 5. You are now ready to use the app(s).
    Type any search term into the input field and wait for results.
+
+6. If you want to change existing links or add new ones you can do so by modifying `server/src/data/links.json` accordingly.
+   Afterwards you need to `cd` into `server/` and run `yarn resample`.
+   All existing links in the database will be deleted and be replaced by those defined in the json file.
 
 ## Known bugs
 
