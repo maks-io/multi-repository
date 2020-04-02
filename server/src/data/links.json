@@ -1,0 +1,72 @@
+[
+  {
+    "nodes": [
+      {
+        "platform": "TISS",
+        "type": "PERSON",
+        "id": "229798"
+      },
+      {
+        "platform": "GITLAB",
+        "type": "PERSON",
+        "id": "4218633"
+      }
+    ]
+  },
+  {
+    "nodes": [
+      {
+        "platform": "TISS",
+        "type": "PERSON",
+        "id": "229798"
+      },
+      {
+        "platform": "TISS",
+        "type": "PROJECT",
+        "id": "1740413"
+      }
+    ]
+  },
+  {
+    "nodes": [
+      {
+        "platform": "TISS",
+        "type": "PROJECT",
+        "id": "1740413"
+      },
+      {
+        "platform": "GITLAB",
+        "type": "PROJECT",
+        "id": "16150178"
+      }
+    ]
+  },
+  {
+    "nodes": [
+      {
+        "platform": "TISS",
+        "type": "PERSON",
+        "id": "229798"
+      },
+      {
+        "platform": "REPOSITUM",
+        "type": "PROJECT",
+        "id": "od______3431::ff5599e50092031c54adb13f4c0791e5"
+      }
+    ]
+  },
+  {
+    "nodes": [
+      {
+        "platform": "TISS",
+        "type": "PERSON",
+        "id": "229798"
+      },
+      {
+        "platform": "INVENIO",
+        "type": "PROJECT",
+        "id": "2542829"
+      }
+    ]
+  }
+]

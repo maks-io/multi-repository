@@ -1,0 +1,42 @@
+{
+  "name": "multi-repository",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "cm": "git-cz",
+    "server": "npm run start --prefix server",
+    "webclient": "npm run start --prefix webclient",
+    "dev": "concurrently \"npm run server \" \"npm run webclient\"",
+    "blowitallaway": "node server/src/data/load-sample-data.js --delete",
+    "sample": "node server/src/data/load-sample-data.js",
+    "resample": "node server/src/data/load-sample-data.js --delete && node server/src/data/load-sample-data.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maks-io/multi-repository.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maks-io/multi-repository/issues"
+  },
+  "homepage": "https://github.com/maks-io/multi-repository#readme",
+  "devDependencies": {
+    "commitizen": "^4.0.3",
+    "concurrently": "^5.0.2",
+    "cz-conventional-changelog": "3.0.2",
+    "prettier": "^1.18.2"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "moment": "^2.24.0",
+    "mongoose": "^5.8.11",
+    "randomcolor": "^0.5.4"
+  }
+}
