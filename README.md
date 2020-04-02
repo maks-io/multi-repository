@@ -2,7 +2,7 @@
 
 This is a prototype / proof of concept for an application, that allows its users to search multiple external sources at once and then link individual items/results together.
 
-![asdf](demo/usage-demo-1.gif)
+![Usage Demo](https://github.com/maks-io/multi-repository/blob/master/demo/usage-demo-1.gif "Usage Demo")
 
 I have built this as part of a project at [TU Wien](https://www.tuwien.at/), therefore I wanna say thanks to [Andreas Rauber](https://informatics.tuwien.ac.at/people/andreas-rauber) and [Tomasz Miksa](https://informatics.tuwien.ac.at/people/tomasz-miksa) for supervising this.
 
