@@ -6,7 +6,11 @@ This is a prototype / proof of concept for an application, that allows its users
 
 I have built this as part of a project at [TU Wien](https://www.tuwien.at/), therefore I wanna say thanks to [Andreas Rauber](https://informatics.tuwien.ac.at/people/andreas-rauber) and [Tomasz Miksa](https://informatics.tuwien.ac.at/people/tomasz-miksa) for supervising this.
 
-A demonstration video can be found here **[COMING SOON]**.
+## Demonstration Video / Screencast
+
+An introduction screencast I did [can be found on youtube](https://youtu.be/CmU5vkxWqTg):
+
+[![Demonstration Screencast](http://img.youtube.com/vi/CmU5vkxWqTg/0.jpg)](http://www.youtube.com/watch?v=CmU5vkxWqTg "Multi Repository - Presentation/Screencast")
 
 ## Features
 
