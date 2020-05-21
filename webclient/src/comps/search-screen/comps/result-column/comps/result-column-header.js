@@ -1,6 +1,6 @@
 import React from "react";
 
-const ResultColumnHeader = ({ platform, type }) => {
+const ResultColumnHeader = ({ logoUrl, type }) => {
   return (
     <div
       style={{
@@ -10,71 +10,21 @@ const ResultColumnHeader = ({ platform, type }) => {
         marginBottom: "1rem"
       }}
     >
-      <ResultColumnLogo platform={platform} type={type} />
-      <ResultColumnTitle platform={platform} type={type} />
+      <ResultColumnLogo logoUrl={logoUrl} />
+      <ResultColumnTitle type={type} />
     </div>
   );
 };
 
 export default ResultColumnHeader;
 
-const ResultColumnTitle = ({ platform, type }) => {
-  const titles = {
-    REPOSITUM: {
-      PROJECT: undefined
-    },
-    INVENIO: {
-      PROJECT: undefined
-    },
-    GITHUB: {
-      PROJECT: "Repositories",
-      PERSON: "Users"
-    },
-    GITLAB: {
-      PROJECT: "Repositories",
-      PERSON: "Users"
-    },
-    TISS: {
-      PROJECT: "Projects",
-      PERSON: "People"
-    }
-  };
-
-  const title = titles[platform][type];
-  return title ? (
-    <h3 style={{ height: "1rem", fontWeight: "bold" }}>{title}</h3>
+const ResultColumnTitle = ({ type }) => {
+  return type ? (
+    <h3 style={{ height: "1rem", fontWeight: "bold", opacity: 0.8 }}>{type}</h3>
   ) : null;
 };
 
-const ResultColumnLogo = ({ platform, type }) => {
-  const logoPaths = {
-    REPOSITUM: {
-      PROJECT: "http://repositum.tuwien.ac.at/domainimage/hostedbyrepositum_150"
-    },
-    INVENIO: {
-      PROJECT: "https://invenio-software.org/static/img/logo-invenio-white.svg"
-    },
-    GITHUB: {
-      PROJECT:
-        "https://github.githubassets.com/images/modules/logos_page/GitHub-Logo.png",
-      PERSON:
-        "https://github.githubassets.com/images/modules/logos_page/GitHub-Logo.png"
-    },
-    GITLAB: {
-      PROJECT:
-        "https://about.gitlab.com/images/press/logo/png/gitlab-logo-gray-rgb.png",
-      PERSON:
-        "https://about.gitlab.com/images/press/logo/png/gitlab-logo-gray-rgb.png"
-    },
-    TISS: {
-      PROJECT:
-        "https://www.tiss.tuwien.ac.at/static/2.5.2/global/images/tiss_logo.png",
-      PERSON:
-        "https://www.tiss.tuwien.ac.at/static/2.5.2/global/images/tiss_logo.png"
-    }
-  };
-
-  const logoPath = logoPaths[platform][type];
+const ResultColumnLogo = ({ logoUrl }) => {
   return (
     <div
       style={{
@@ -87,7 +37,7 @@ const ResultColumnLogo = ({ platform, type }) => {
       }}
     >
       <img
-        src={logoPath}
+        src={logoUrl}
         style={{ maxWidth: "100%", maxHeight: "4rem" }}
         alt="platformLogo"
       />

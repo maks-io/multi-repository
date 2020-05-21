@@ -1,32 +1,11 @@
-const { mapResults } = require("../services/map-results");
-const { processResults } = require("../services/process-results");
-const {
-  getProjectById: getProjectByIdTiss
-} = require("./tiss-projects-controller");
-const {
-  getProjectById: getProjectByIdGitlab
-} = require("./gitlab-projects-controller");
-const {
-  getUserById: getUserByIdGitlab
-} = require("./gitlab-persons-controller");
-const {
-  getProjectById: getProjectByIdGithub
-} = require("./github-projects-controller");
-const {
-  getUserById: getUserByIdGithub
-} = require("./github-persons-controller");
-const { getUserById: getUserByIdTiss } = require("./tiss-persons-controller");
-const {
-  getProjectById: getProjectByIdRepositum
-} = require("./repositum-controller");
-const {
-  getProjectById: getProjectByIdInvenio
-} = require("./invenio-controller");
-
+const { createIdentifier } = require("../services/create-identifier");
 const _ = require("lodash");
 const randomColor = require("randomcolor");
-
+const { getById } = require("./external-resource-controller");
+const { mapResults } = require("../services/map-results");
+const { processResults } = require("../services/process-results");
 const Link = require("../models/Link");
+const { externalApiConfig } = require("../external-apis");
 
 exports.fetchLinks = async (req, res) => {
   const apiData = req.body;
@@ -49,10 +28,15 @@ exports.fetchLinks = async (req, res) => {
 
 const applyLinkLogic = async (individualResults, links) => {
   const promises = [];
-  const individualResultsCopy = _.cloneDeep(individualResults);
+  const individualResultsCopy = processResults(
+    individualResults,
+    (item, platform, type, processedResults) => {
+      processedResults[platform][type].push({ ...item, isOld: true });
+    }
+  );
 
   links.forEach(link => {
-    const linkColor = randomColor();
+    const linkColor = randomColor(); // TODO temporarily using random color as link identifier
 
     const linkNodeOnePlatform = link.nodes[0].platform;
     const linkNodeOneType = link.nodes[0].type;
@@ -64,14 +48,21 @@ const applyLinkLogic = async (individualResults, links) => {
     const linkString = `${linkNodeOnePlatform}_${linkNodeOneType}_${linkNodeOneId} <---> ${linkNodeTwoPlatform}_${linkNodeTwoType}_${linkNodeTwoId}`;
     console.log("[LINK]", linkString);
 
+    const platformOne = individualResultsCopy[linkNodeOnePlatform];
+    const platformTwo = individualResultsCopy[linkNodeTwoPlatform];
+
+    if (!platformOne || !platformTwo) {
+      // looking at link that is not relevant
+      return;
+    }
+
     let nodeOne;
-    const scopeOne =
-      individualResultsCopy[linkNodeOnePlatform][linkNodeOneType];
+    const scopeOne = platformOne[linkNodeOneType];
     if (scopeOne) {
       const idArray = scopeOne.filter(
         i =>
           i.identifier ===
-          `${linkNodeOnePlatform}_${linkNodeOneType}_${linkNodeOneId}`
+          createIdentifier(linkNodeOnePlatform, linkNodeOneType, linkNodeOneId)
       );
       if (idArray.length > 0) {
         nodeOne = idArray[0];
@@ -79,13 +70,12 @@ const applyLinkLogic = async (individualResults, links) => {
     }
 
     let nodeTwo;
-    const scopeTwo =
-      individualResultsCopy[linkNodeTwoPlatform][linkNodeTwoType];
+    const scopeTwo = platformTwo[linkNodeTwoType];
     if (scopeTwo) {
       const idArray = scopeTwo.filter(
         i =>
           i.identifier ===
-          `${linkNodeTwoPlatform}_${linkNodeTwoType}_${linkNodeTwoId}`
+          createIdentifier(linkNodeTwoPlatform, linkNodeTwoType, linkNodeTwoId)
       );
       if (idArray.length > 0) {
         nodeTwo = idArray[0];
@@ -93,18 +83,17 @@ const applyLinkLogic = async (individualResults, links) => {
     }
 
     if (nodeOne && nodeTwo) {
-      console.log("both nodes found", nodeOne, nodeTwo);
+      console.log("both nodes already available from step 1", nodeOne, nodeTwo);
       nodeOne.isPartOf.push(linkColor);
       nodeOne.isNew = true;
-      nodeOne.isOld = true;
       nodeTwo.isPartOf.push(linkColor);
       nodeTwo.isNew = true;
-      nodeTwo.isOld = true;
     } else if (nodeOne) {
-      console.log("left node found");
+      console.log(
+        "left node already available from step 1 -> fetch right node"
+      );
       nodeOne.isPartOf.push(linkColor);
       nodeOne.isNew = true;
-      nodeOne.isOld = true;
       promises.push(
         fetchMissingResource(
           linkNodeTwoPlatform,
@@ -114,10 +103,11 @@ const applyLinkLogic = async (individualResults, links) => {
         )
       );
     } else if (nodeTwo) {
-      console.log("right node found");
+      console.log(
+        "right node already available from step 1 -> fetch left node"
+      );
       nodeTwo.isPartOf.push(linkColor);
       nodeTwo.isNew = true;
-      nodeTwo.isOld = true;
       promises.push(
         fetchMissingResource(
           linkNodeOnePlatform,
@@ -127,57 +117,21 @@ const applyLinkLogic = async (individualResults, links) => {
         )
       );
     } else {
-      console.log("no node found -> link not needed -> nothing to do!");
+      console.log(
+        "no node available from step 1 -> link not needed -> nothing to do!"
+      );
       // nothing to do
     }
   });
 
   const newResourcesCollection = await Promise.all(promises);
   newResourcesCollection.forEach(newResource => {
-    individualResultsCopy[newResource.platform][newResource.type].push({
-      ...newResource.resource,
-      isNew: true,
-      isPartOf: [newResource.resource.group]
-    });
+    individualResultsCopy[newResource.platform][newResource.type].push(
+      newResource
+    );
   });
 
-  const resultsWithIdentifiers = addIdentifiersToResults(individualResultsCopy);
-
-  const distinctResults = makeResultsDistinct(resultsWithIdentifiers);
-
-  return distinctResults;
-};
-
-// TODO path for ids should be extracted globally -> but they are needed on server AND client side (use lerna?)
-const addIdentifiersToResults = results => {
-  return mapResults(results, (item, platform, type) => {
-    if (item.identifier) {
-      return item;
-    }
-
-    const originalId = {
-      REPOSITUM: {
-        PROJECT: _.get(
-          item,
-          `result.metadata["oaf:entity"]["oaf:result"].originalId`
-        )
-      },
-      GITHUB: {
-        PERSON: _.get(item, `id`),
-        PROJECT: _.get(item, `id`)
-      },
-      GITLAB: {
-        PERSON: _.get(item, `id`),
-        PROJECT: _.get(item, `id`)
-      },
-      INVENIO: { PROJECT: _.get(item, `name`) },
-      TISS: {
-        PERSON: _.get(item, `tiss_id`),
-        PROJECT: _.get(item, `titleEn`)
-      }
-    }[platform][type];
-    return { ...item, identifier: `${platform}_${type}_${originalId}` };
-  });
+  return makeResultsDistinct(individualResultsCopy);
 };
 
 const makeResultsDistinct = results => {
@@ -196,15 +150,6 @@ const makeResultsDistinct = results => {
   });
 };
 
-const fetchMissingResource = (platform, type, id, group) => {
-  console.log("fetchMissingResource", platform, type, id);
-  const fetchFunctions = {
-    GITLAB: { PERSON: getUserByIdGitlab, PROJECT: getProjectByIdGitlab },
-    GITHUB: { PERSON: getUserByIdGithub, PROJECT: getProjectByIdGithub },
-    TISS: { PERSON: getUserByIdTiss, PROJECT: getProjectByIdTiss },
-    REPOSITUM: { PROJECT: getProjectByIdRepositum },
-    INVENIO: { PROJECT: getProjectByIdInvenio }
-  };
-
-  return fetchFunctions[platform][type](id, group);
+const fetchMissingResource = (platform, type, id, groupId) => {
+  return getById(platform, type, id, groupId);
 };

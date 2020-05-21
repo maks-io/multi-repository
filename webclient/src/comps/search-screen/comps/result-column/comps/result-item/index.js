@@ -2,48 +2,18 @@ import React, { Component } from "react";
 import { Card } from "antd";
 import LinkTag from "./comps/link-tag";
 import SourceTag from "./comps/source-tag";
-import ResultItemGithubProject from "./comps/result-item-github-project";
-import ResultItemGithubPerson from "./comps/result-item-github-person";
-import ResultItemRepositumProject from "./comps/result-item-repositum-project";
-import ResultItemInvenioProject from "./comps/result-item-invenio-project";
-import ResultItemGitlabProject from "./comps/result-item-gitlab-project";
-import ResultItemGitlabPerson from "./comps/result-item-gitlab-person";
-import ResultItemTissPerson from "./comps/result-item-tiss-person";
-import ResultItemTissProject from "./comps/result-item-tiss-project";
 import OriginalSourceTag from "./comps/original-source-tag";
+import ResultItemTitleAndHeader from "./comps/result-item-title-and-header";
 
 const HOVER_DIRECT_COLOR = "#9DB4C0";
 const HOVER_INDIRECT_COLOR = "#C2DFE3";
 
-const ResultItemContent = ({ platform, type, data }) => {
-  const types = {
-    REPOSITUM: {
-      PROJECT: <ResultItemRepositumProject data={data} />
-    },
-    INVENIO: {
-      PROJECT: <ResultItemInvenioProject data={data} />
-    },
-    GITHUB: {
-      PROJECT: <ResultItemGithubProject data={data} />,
-      PERSON: <ResultItemGithubPerson data={data} />
-    },
-    GITLAB: {
-      PROJECT: <ResultItemGitlabProject data={data} />,
-      PERSON: <ResultItemGitlabPerson data={data} />
-    },
-    TISS: {
-      PROJECT: <ResultItemTissProject data={data} />,
-      PERSON: <ResultItemTissPerson data={data} />
-    }
-  };
-
-  return types[platform][type];
-};
-
 class ResultItem extends Component {
   render() {
     const {
+      resultStructure,
       data,
+      fallbackAvatar,
       fetchStep,
       index,
       platform,
@@ -56,11 +26,11 @@ class ResultItem extends Component {
 
     if (focusInfo.identifier) {
       // some item is focused!
-      if (focusInfo.group.length === 0) {
+      if (focusInfo.linkIds.length === 0) {
         if (focusInfo.identifier !== data.identifier) {
           return null;
         }
-      } else if (!data.isPartOf.some(r => focusInfo.group.includes(r))) {
+      } else if (!data.isPartOf.some(r => focusInfo.linkIds.includes(r))) {
         return null;
       }
     }
@@ -71,10 +41,10 @@ class ResultItem extends Component {
       hoverInfo.identifier === data.identifier
     ) {
       hoverStyle.backgroundColor = HOVER_DIRECT_COLOR;
-    } else if (hoverInfo.group) {
-      if (data.isNew && hoverInfo.group.includes(data.isPartOf[0])) {
+    } else if (hoverInfo.linkIds) {
+      if (data.isNew && hoverInfo.linkIds.includes(data.isPartOf[0])) {
         hoverStyle.backgroundColor = HOVER_INDIRECT_COLOR;
-      } else if (data.isPartOf.some(r => hoverInfo.group.includes(r))) {
+      } else if (data.isPartOf.some(r => hoverInfo.linkIds.includes(r))) {
         hoverStyle.backgroundColor = HOVER_INDIRECT_COLOR;
       }
     }
@@ -120,12 +90,18 @@ class ResultItem extends Component {
               display: "flex",
               flexDirection: "column",
               flex: 1,
-              alignItems: "center",
+              alignItems: "center"
             }}
           >
             <div style={{ fontWeight: "bold", wordBreak: "break-all" }}>
-              <ResultItemContent platform={platform} type={type} data={data} />
-            </div>{" "}
+              <ResultItemTitleAndHeader
+                resultStructure={resultStructure}
+                platform={platform}
+                type={type}
+                data={data}
+                fallbackAvatar={fallbackAvatar}
+              />
+            </div>
             <div
               className="tags"
               style={{

@@ -9,51 +9,6 @@ import { fetchLinks } from "./services/fetch-links";
 
 const LOADING_MESSAGE_KEY = "loadingMessage";
 
-const getInitialResources = isLoading => ({
-  TISS: {
-    PERSON: {
-      items: [],
-      isLoading
-    },
-    PROJECT: {
-      items: [],
-      isLoading
-    }
-  },
-  REPOSITUM: {
-    PROJECT: {
-      items: [],
-      isLoading
-    }
-  },
-  INVENIO: {
-    PROJECT: {
-      items: [],
-      isLoading
-    }
-  },
-  GITLAB: {
-    PERSON: {
-      items: [],
-      isLoading
-    },
-    PROJECT: {
-      items: [],
-      isLoading
-    }
-  },
-  GITHUB: {
-    PERSON: {
-      items: [],
-      isLoading
-    },
-    PROJECT: {
-      items: [],
-      isLoading
-    }
-  }
-});
-
 class SearchScreen extends Component {
   state = {
     searchTerm: "",
@@ -63,23 +18,52 @@ class SearchScreen extends Component {
     hoverInfo: {},
     focusInfo: {},
     nrComplete: -1,
-    resources: getInitialResources(false)
+    externalResources: undefined,
+    resourcesState: undefined
+  };
+
+  componentDidMount = async () => {
+    const externalResources = (await axios.get("/api/external-resources")).data;
+    this.setState({ externalResources }, () => {
+      const initialResources = this.getInitialResources(false);
+      this.setState({ resourcesState: initialResources });
+    });
+  };
+
+  getInitialResources = isLoading => {
+    const { externalResources } = this.state;
+    const initialResources = {};
+    externalResources.forEach(externalResource => {
+      _.set(
+        initialResources,
+        `${externalResource.platform}.${externalResource.type}`,
+        { items: [], isLoading }
+      );
+    });
+    return initialResources;
   };
 
   searchResource = async (platform, type, searchTerm) => {
     const messagePrefix = `[${platform} - ${type}]`;
     console.log(messagePrefix, "search start...");
 
-    const url = `/api/${platform.toLowerCase()}/${type.toLowerCase()}/search/${searchTerm}`;
+    const url = `/api/search-by-term/${platform}/${type}/${searchTerm}`;
     const { data } = await axios.get(url);
 
     this.setState(
       prevState => ({
-        resources: {
-          ...prevState.resources,
+        resourcesState: {
+          ...prevState.resourcesState,
           [platform]: {
-            ...prevState.resources[platform],
-            [type]: { items: data, isLoading: false }
+            ...prevState.resourcesState[platform],
+            [type]: {
+              items: data.results.map(r => ({
+                ...r,
+                isPartOf: [],
+                resultStructure: data.resultStructure
+              })),
+              isLoading: false
+            }
           }
         },
         nrComplete: prevState.nrComplete + 1
@@ -108,16 +92,14 @@ class SearchScreen extends Component {
   };
 
   getResourcesFlat = () => {
-    const { resources } = this.state;
-    return Object.keys(resources)
-      .map(platform =>
-        Object.keys(resources[platform]).map(type => ({
-          ...resources[platform][type],
-          platform,
-          type
-        }))
-      )
-      .flat();
+    const { externalResources, resourcesState } = this.state;
+    return externalResources.map(er => ({
+      ...resourcesState[er.platform][er.type],
+      platform: er.platform,
+      type: er.type,
+      logoUrl: er.logoUrl,
+      fallbackAvatar: er.fallbackAvatar
+    }));
   };
 
   search = async () => {
@@ -130,7 +112,7 @@ class SearchScreen extends Component {
         hoverInfo: {},
         focusInfo: {},
         nrComplete: 0,
-        resources: getInitialResources(true)
+        resourcesState: this.getInitialResources(true)
       },
       this.updateLoadingMessage
     );
@@ -179,19 +161,19 @@ class SearchScreen extends Component {
       searchTerm: "",
       resultSearchTerm: "",
       isLoading: false,
-      resources: getInitialResources(false)
+      resourcesState: this.getInitialResources(false)
     });
   };
 
-  handleHoverItem = (identifier, group) => {
+  handleHoverItem = (identifier, linkIds) => {
     if (!identifier) {
       this.setState({ hoverInfo: {} });
     } else {
-      this.setState({ hoverInfo: { identifier, group } });
+      this.setState({ hoverInfo: { identifier, linkIds } });
     }
   };
 
-  handleClickItem = (identifier, group) => {
+  handleClickItem = (identifier, linkIds) => {
     if (!identifier) {
       message.destroy();
       this.setState({ focusInfo: {} });
@@ -200,21 +182,30 @@ class SearchScreen extends Component {
       message.warn({
         content: (
           <FocusedViewMessage
-            currentItemHasLinks={group.length > 0}
+            currentItemHasLinks={linkIds.length > 0}
             leave={() => this.handleClickItem(undefined)}
           />
         ),
         duration: 0
       });
-      this.setState({ focusInfo: { identifier, group } });
+      this.setState({ focusInfo: { identifier, linkIds } });
     }
   };
 
   render() {
-    const { isLoading, searchTerm } = this.state;
+    const {
+      externalResources,
+      resourcesState,
+      isLoading,
+      searchTerm
+    } = this.state;
+
+    if (!externalResources || !resourcesState) {
+      return <div>Initializing... please wait!</div>;
+    }
 
     const resourcesFlat = this.getResourcesFlat();
-    const numberOfResources = resourcesFlat.length;
+    const numberOfResources = externalResources.length;
 
     const haveResults = searchTerm.length > 0;
     const fetchStep = this.state.loadingStep;
@@ -272,12 +263,6 @@ class SearchScreen extends Component {
             }}
           />
         </div>
-        {/*  <div style={{ height: "2rem" }}>
-          {atLeastOneIsLoading && <h2>Searching for '{searchTerm}'...</h2>}
-          {noOneIsLoading && resultSearchTerm.length > 0 && (
-            <h2>Search result for '{resultSearchTerm}':</h2>
-          )}
-        </div>*/}
         <div
           style={{
             display: "flex",
@@ -292,6 +277,8 @@ class SearchScreen extends Component {
                 key={`${resource.platform}_${resource.type}`}
                 platform={resource.platform}
                 type={resource.type}
+                logoUrl={resource.logoUrl}
+                fallbackAvatar={resource.fallbackAvatar}
                 items={resource.items}
                 isLoading={resource.isLoading}
                 fetchStep={fetchStep}

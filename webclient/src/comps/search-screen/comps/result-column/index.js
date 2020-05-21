@@ -9,6 +9,7 @@ class ResultColumn extends Component {
     const {
       platform,
       type,
+      logoUrl,fallbackAvatar,
       items,
       isLoading,
       fetchStep,
@@ -30,7 +31,7 @@ class ResultColumn extends Component {
             width: columnWidth
           }}
         >
-          <ResultColumnHeader platform={platform} type={type} />
+          <ResultColumnHeader logoUrl={logoUrl} type={type} />
           <div
             style={{
               display: "flex",
@@ -50,7 +51,7 @@ class ResultColumn extends Component {
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    opacity: focusInfo.identifier && "0.25"
+                    opacity: focusInfo.identifier && 0.25
                   }}
                 >
                   {items.length} item(s) found
@@ -69,6 +70,7 @@ class ResultColumn extends Component {
                       index={index}
                       platform={platform}
                       type={type}
+                      fallbackAvatar={fallbackAvatar}
                       handleHoverItem={handleHoverItem}
                       hoverInfo={hoverInfo}
                       handleClickItem={handleClickItem}
