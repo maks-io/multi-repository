@@ -1,22 +1,25 @@
 import React, { Component } from "react";
-import { Input, message } from "antd";
+import { Button, Input, message } from "antd";
 import _ from "lodash";
 import axios from "axios";
-import FocusedViewMessage from "./comps/focused-view-message";
 import LoadingMessage from "./comps/loading-message";
 import ResultColumn from "./comps/result-column";
 import { fetchLinks } from "./services/fetch-links";
+import { constants } from "../../constants";
 
 const LOADING_MESSAGE_KEY = "loadingMessage";
 
 class SearchScreen extends Component {
   state = {
-    searchTerm: "",
+    mode: "SEARCH", // one of 'SEARCH', 'FOCUS' and 'EDIT_LINKS'
+    searchTerm: "Bernhard Gößwein",
+    // searchTerm: "",
     resultSearchTerm: "",
     isLoading: false,
     loadingStep: -1, // -1 ... not loading at all, 0 ... first step (initial search in individual sources), 1 ... second step (linking)
     hoverInfo: {},
     focusInfo: {},
+    linkEditInfo: {},
     nrComplete: -1,
     externalResources: undefined,
     resourcesState: undefined
@@ -57,11 +60,14 @@ class SearchScreen extends Component {
           [platform]: {
             ...prevState.resourcesState[platform],
             [type]: {
-              items: data.results.map(r => ({
-                ...r,
-                isPartOf: [],
-                resultStructure: data.resultStructure
-              })),
+              items: [
+                ...prevState.resourcesState[platform][type].items, // this is [] if mode !== "EDIT_LINKS"
+                ...data.results.map(r => ({
+                  ...r,
+                  isPartOf: [],
+                  resultStructure: data.resultStructure
+                }))
+              ],
               isLoading: false
             }
           }
@@ -105,17 +111,9 @@ class SearchScreen extends Component {
   search = async () => {
     this.cancelDebouncedSearch();
 
-    this.setState(
-      {
-        isLoading: true,
-        loadingStep: 0,
-        hoverInfo: {},
-        focusInfo: {},
-        nrComplete: 0,
-        resourcesState: this.getInitialResources(true)
-      },
-      this.updateLoadingMessage
-    );
+    this.resetSearch(false);
+
+    this.updateLoadingMessage();
 
     const { searchTerm } = this.state;
     console.log("Start searching with searchTerm:", searchTerm);
@@ -156,16 +154,33 @@ class SearchScreen extends Component {
 
   cancelDebouncedSearch = () => this.debouncedSearch.cancel();
 
-  resetSearch = () => {
+  resetSearch = (resetSearchTerm = true) => {
+    const resourcesState = this.getInitialResources(false);
+
+    if (this.state.mode === constants.mode.EDIT_LINKS) {
+      this.state.externalResources.forEach(er => {
+        this.state.resourcesState[er.platform][er.type].items.forEach(item => {
+          if (item.isSticky) {
+            resourcesState[er.platform][er.type].items.push(item);
+          }
+        });
+      });
+    }
+
     this.setState({
-      searchTerm: "",
+      searchTerm: resetSearchTerm ? "" : this.state.searchTerm,
       resultSearchTerm: "",
+      nrComplete: 0,
       isLoading: false,
-      resourcesState: this.getInitialResources(false)
+      resourcesState
     });
   };
 
   handleHoverItem = (identifier, linkIds) => {
+    if (this.state.mode === constants.mode.EDIT_LINKS) {
+      // avoid hovering when editing links
+      return;
+    }
     if (!identifier) {
       this.setState({ hoverInfo: {} });
     } else {
@@ -174,30 +189,61 @@ class SearchScreen extends Component {
   };
 
   handleClickItem = (identifier, linkIds) => {
-    if (!identifier) {
-      message.destroy();
-      this.setState({ focusInfo: {} });
+    console.log("handleClickItem with", identifier);
+    if (this.state.mode === "EDIT_LINKS") {
+      // do nothing
+    } else if (!identifier) {
+      this.setState({ mode: constants.mode.SEARCH, focusInfo: {} });
+    } else if (identifier === this.state.focusInfo.identifier) {
+      this.setState({ mode: constants.mode.SEARCH, focusInfo: {} });
     } else {
-      message.destroy();
-      message.warn({
-        content: (
-          <FocusedViewMessage
-            currentItemHasLinks={linkIds.length > 0}
-            leave={() => this.handleClickItem(undefined)}
-          />
-        ),
-        duration: 0
+      this.setState({
+        mode: constants.mode.FOCUS,
+        focusInfo: { identifier, linkIds }
       });
-      this.setState({ focusInfo: { identifier, linkIds } });
     }
+  };
+
+  handleLinkTagClick = (identifier, linkIds) => {
+    console.log("handleLinkTagClick with", identifier);
+    if (identifier === this.state.linkEditInfo.activeIdentifier) {
+      this.setState({ mode: constants.mode.SEARCH, linkEditInfo: {} });
+    } else {
+      this.handleHoverItem() // to reset hovering
+
+      // mark linked items as sticky:
+      const resourcesState = _.cloneDeep(this.state.resourcesState);
+      this.state.externalResources.forEach(er => {
+        resourcesState[er.platform][er.type].items.forEach(item => {
+          if (linkIds.some(linkId => item.isPartOf.includes(linkId))) {
+            item.isSticky = true;
+          }
+        });
+      });
+
+      this.setState({
+        mode: constants.mode.EDIT_LINKS,
+        linkEditInfo: {
+          activeIdentifier: identifier,
+          linkedItemsIdentifiers: linkIds
+        },
+        resourcesState
+      });
+    }
+  };
+
+  handleRemoveLinkConfirm = identifier => {
+    console.log("handleRemoveLinkConfirm", identifier);
   };
 
   render() {
     const {
+      mode,
       externalResources,
       resourcesState,
       isLoading,
-      searchTerm
+      searchTerm,
+      loadingStep: fetchStep
     } = this.state;
 
     if (!externalResources || !resourcesState) {
@@ -208,7 +254,6 @@ class SearchScreen extends Component {
     const numberOfResources = externalResources.length;
 
     const haveResults = searchTerm.length > 0;
-    const fetchStep = this.state.loadingStep;
 
     return (
       <div
@@ -219,6 +264,28 @@ class SearchScreen extends Component {
           marginTop: "2rem"
         }}
       >
+        <div
+          style={{ position: "absolute", top: 0, right: 0, fontWeight: "bold" }}
+        >
+          {this.state.mode === "FOCUS" && (
+            <Button
+              type="primary"
+              onClick={() => this.setState({ mode: "SEARCH", focusInfo: {} })}
+            >
+              Focused-View-Mode -> Click to Leave
+            </Button>
+          )}
+          {this.state.mode === "EDIT_LINKS" && (
+            <Button
+              type="primary"
+              onClick={() =>
+                this.setState({ mode: "SEARCH", linkEditInfo: {} })
+              }
+            >
+              Edit-Links-Mode -> Click to Leave
+            </Button>
+          )}
+        </div>
         <h1
           style={{ fontWeight: "bold", letterSpacing: "0.45rem", opacity: 0.6 }}
         >
@@ -229,7 +296,7 @@ class SearchScreen extends Component {
         >
           <Input.Search
             disabled={
-              this.state.focusInfo.identifier || this.state.loadingStep !== -1
+              this.state.mode === "FOCUS" || this.state.loadingStep !== -1
             }
             style={{
               opacity:
@@ -281,13 +348,17 @@ class SearchScreen extends Component {
                 fallbackAvatar={resource.fallbackAvatar}
                 items={resource.items}
                 isLoading={resource.isLoading}
+                mode={mode}
                 fetchStep={fetchStep}
                 handleHoverItem={this.handleHoverItem}
                 hoverInfo={this.state.hoverInfo}
                 handleClickItem={this.handleClickItem}
                 focusInfo={this.state.focusInfo}
+                linkEditInfo={this.state.linkEditInfo}
                 haveResults={haveResults}
                 columnWidth={`${90 / numberOfResources}vw`}
+                handleLinkTagClick={this.handleLinkTagClick}
+                handleRemoveLinkConfirm={this.handleRemoveLinkConfirm}
               />
             ))}
           </div>

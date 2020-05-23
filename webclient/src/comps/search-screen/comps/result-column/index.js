@@ -9,7 +9,8 @@ class ResultColumn extends Component {
     const {
       platform,
       type,
-      logoUrl,fallbackAvatar,
+      logoUrl,
+      fallbackAvatar,
       items,
       isLoading,
       fetchStep,
@@ -17,8 +18,12 @@ class ResultColumn extends Component {
       hoverInfo,
       handleClickItem,
       focusInfo,
+      linkEditInfo,
       haveResults,
-      columnWidth
+      columnWidth,
+      mode,
+      handleRemoveLinkConfirm,
+      handleLinkTagClick
     } = this.props;
 
     return (
@@ -65,17 +70,22 @@ class ResultColumn extends Component {
                 >
                   {items.map((i, index) => (
                     <ResultItem
-                      key={createIdentifier(platform, type, index)} // this is a dummy identifier
+                      key={i.identifier}
                       data={i}
                       index={index}
+                      mode={mode}
                       platform={platform}
                       type={type}
+                      identifier={i.identifier}
                       fallbackAvatar={fallbackAvatar}
                       handleHoverItem={handleHoverItem}
                       hoverInfo={hoverInfo}
                       handleClickItem={handleClickItem}
                       focusInfo={focusInfo}
+                      linkEditInfo={linkEditInfo}
                       fetchStep={fetchStep}
+                      handleLinkTagClick={handleLinkTagClick}
+                      handleRemoveLinkConfirm={handleRemoveLinkConfirm}
                     />
                   ))}
                 </div>

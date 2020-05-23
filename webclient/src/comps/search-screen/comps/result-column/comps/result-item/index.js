@@ -18,13 +18,18 @@ class ResultItem extends Component {
       index,
       platform,
       type,
+      identifier,
+      handleLinkTagClick,
       handleHoverItem,
       hoverInfo,
       handleClickItem,
-      focusInfo
+      focusInfo,
+      linkEditInfo,
+      handleRemoveLinkConfirm,
+      mode
     } = this.props;
 
-    if (focusInfo.identifier) {
+    if (mode === "FOCUS") {
       // some item is focused!
       if (focusInfo.linkIds.length === 0) {
         if (focusInfo.identifier !== data.identifier) {
@@ -49,6 +54,10 @@ class ResultItem extends Component {
       }
     }
 
+    const isHighlighted =
+      (mode === "FOCUS" && focusInfo.identifier === data.identifier) ||
+      (mode === "EDIT_LINKS" && linkEditInfo.identifier === data.identifier);
+
     return (
       <Card
         size="small"
@@ -56,10 +65,8 @@ class ResultItem extends Component {
           borderRadius: "0.5rem",
           margin: "0.3rem",
           cursor: "pointer",
-          borderWidth:
-            focusInfo.identifier &&
-            focusInfo.identifier === data.identifier &&
-            7,
+          borderWidth: 7,
+          borderColor: isHighlighted ? "green" : "transparent",
           ...hoverStyle
         }}
         bodyStyle={{ padding: "0.3rem" }}
@@ -115,6 +122,13 @@ class ResultItem extends Component {
               <LinkTag
                 fetchStep={fetchStep}
                 nrOfLinks={data.isPartOf ? data.isPartOf.length : 0}
+                platform={platform}
+                type={type}
+                identifier={identifier}
+                handleLinkTagClick={handleLinkTagClick}
+                linkEditInfo={linkEditInfo}
+                isPartOf={data.isPartOf}
+                handleRemoveLinkConfirm={handleRemoveLinkConfirm}
               />
               <SourceTag fetchStep={fetchStep} data={data} />
               <OriginalSourceTag platform={platform} type={type} data={data} />
