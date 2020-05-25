@@ -4,6 +4,7 @@ import LinkTag from "./comps/link-tag";
 import SourceTag from "./comps/source-tag";
 import OriginalSourceTag from "./comps/original-source-tag";
 import ResultItemTitleAndHeader from "./comps/result-item-title-and-header";
+import { constants } from "../../../../../../constants";
 
 const HOVER_DIRECT_COLOR = "#9DB4C0";
 const HOVER_INDIRECT_COLOR = "#C2DFE3";
@@ -26,10 +27,11 @@ class ResultItem extends Component {
       focusInfo,
       linkEditInfo,
       handleRemoveLinkConfirm,
+      handleAddLinkConfirm,
       mode
     } = this.props;
 
-    if (mode === "FOCUS") {
+    if (mode === constants.mode.FOCUS) {
       // some item is focused!
       if (focusInfo.linkIds.length === 0) {
         if (focusInfo.identifier !== data.identifier) {
@@ -120,6 +122,7 @@ class ResultItem extends Component {
               }}
             >
               <LinkTag
+                linkEditModeActive={mode === constants.mode.EDIT_LINKS}
                 fetchStep={fetchStep}
                 nrOfLinks={data.isPartOf ? data.isPartOf.length : 0}
                 platform={platform}
@@ -129,6 +132,7 @@ class ResultItem extends Component {
                 linkEditInfo={linkEditInfo}
                 isPartOf={data.isPartOf}
                 handleRemoveLinkConfirm={handleRemoveLinkConfirm}
+                handleAddLinkConfirm={handleAddLinkConfirm}
               />
               <SourceTag fetchStep={fetchStep} data={data} />
               <OriginalSourceTag platform={platform} type={type} data={data} />

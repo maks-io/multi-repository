@@ -1,11 +1,8 @@
 import React from "react";
-import { Spin, Tag, Popconfirm } from "antd";
+import { Popconfirm, Spin, Tag } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
-import { NodeIndexOutlined } from "@ant-design/icons/lib/icons";
-import { DeleteOutlined } from "@ant-design/icons/lib/icons";
-import SyncOutlined from "@ant-design/icons/lib/icons/SyncOutlined";
-import CloseCircleOutlined from "@ant-design/icons/lib/icons/CloseCircleOutlined";
-import CheckCircleOutlined from "@ant-design/icons/lib/icons/CheckCircleOutlined";
+import { DeleteOutlined, NodeIndexOutlined } from "@ant-design/icons/lib/icons";
+import PlusOutlined from "@ant-design/icons/lib/icons/PlusOutlined";
 
 const antIcon = (
   <LoadingOutlined
@@ -28,85 +25,137 @@ const Indicator = props => {
 
 const LinkTag = props => {
   const {
+    linkEditModeActive,
     fetchStep,
     nrOfLinks,
     handleLinkTagClick,
     identifier,
     linkEditInfo,
     isPartOf,
-    handleRemoveLinkConfirm
+    handleRemoveLinkConfirm,
+    handleAddLinkConfirm
   } = props;
 
-  const title =
-    fetchStep === -1
-      ? `This item has ${nrOfLinks} link(s).\nClick to add more links or delete existing ones...`
-      : fetchStep === 0
-      ? "Links not fetched yet - please wait..."
-      : "Fetching links - please wait...";
-  const opacity =
-    fetchStep === 0 || (fetchStep === -1 && nrOfLinks === 0) ? 0.5 : 1;
+  const linkTagStatus = !linkEditModeActive
+    ? "STANDARD"
+    : identifier === linkEditInfo.activeIdentifier
+    ? "ACTIVE"
+    : linkEditInfo.linkedItemsIdentifiers &&
+      linkEditInfo.linkedItemsIdentifiers.includes(identifier)
+    ? "LINKED_ITEM"
+    : "POTENTIAL_LINK";
 
-  const linkTagStatus =
-    identifier === linkEditInfo.activeIdentifier
-      ? "ACTIVE"
-      : linkEditInfo.linkedItemsIdentifiers &&
-        isPartOf.some(r => linkEditInfo.linkedItemsIdentifiers.includes(r))
-      ? "LINKED_ITEM"
-      : "STANDARD";
+  if (linkTagStatus === "STANDARD") {
+    const opacity =
+      fetchStep === 0 || (fetchStep === -1 && nrOfLinks === 0) ? 0.5 : 1;
+    const title =
+      fetchStep === -1
+        ? `This item has ${nrOfLinks} link(s).\nClick to add more links or delete existing ones...`
+        : fetchStep === 0
+        ? "Links not fetched yet - please wait..."
+        : "Fetching links - please wait...";
 
-  return (
-    <Tag
-      style={{
-        fontWeight: "bold",
-        cursor: "pointer",
-        color:
-          linkTagStatus === "LINKED_ITEM"
-            ? "red"
-            : linkTagStatus === "ACTIVE"
-            ? "blue"
-            : "black",
-        backgroundColor:
-          linkTagStatus === "LINKED_ITEM"
-            ? "coral"
-            : linkTagStatus === "ACTIVE"
-            ? "lightblue"
-            : "white",
-        opacity
-      }}
-      title={
-        linkTagStatus === "LINKED_ITEM"
-          ? "Click to remove link..."
-          : linkTagStatus === "ACTIVE"
-          ? `You are editing these links. There are currently ${nrOfLinks} other items linked to this item. Search for new items above to link more, or delete existing links.`
-          : title
-      }
-      onClick={e => {
-        e.stopPropagation();
-        if (linkTagStatus !== "LINKED_ITEM") {
+    return (
+      <Tag
+        style={{
+          fontWeight: "bold",
+          cursor: "pointer",
+          color: "black",
+          backgroundColor: "white",
+          opacity
+        }}
+        title={title}
+        onClick={e => {
+          e.stopPropagation();
           handleLinkTagClick(identifier, isPartOf);
-        }
-      }}
-    >
-      {(linkTagStatus === "STANDARD" || linkTagStatus === "ACTIVE") && (
+        }}
+      >
         <>
           <NodeIndexOutlined />{" "}
           <Indicator fetchStep={fetchStep} nrOfLinks={nrOfLinks} />
         </>
-      )}
-      {linkTagStatus === "LINKED_ITEM" && (
-        <Popconfirm
-          title="Do you really want to remove this link?"
-          onConfirm={handleRemoveLinkConfirm}
-          onCancel={null}
-          okText="Yes"
-          cancelText="No"
-          placement="bottom"
+      </Tag>
+    );
+  }
+
+  if (linkTagStatus === "ACTIVE") {
+    return (
+      <Tag
+        style={{
+          fontWeight: "bold",
+          cursor: "pointer",
+          color: "blue",
+          backgroundColor: "lightblue"
+        }}
+        title={`You are currently editing links for this item. Click to exit this linking mode.`}
+        onClick={e => {
+          e.stopPropagation();
+          handleLinkTagClick(identifier, isPartOf);
+        }}
+      >
+        <>
+          <NodeIndexOutlined />{" "}
+          <Indicator fetchStep={fetchStep} nrOfLinks={nrOfLinks} />
+        </>
+      </Tag>
+    );
+  }
+
+  if (linkTagStatus === "LINKED_ITEM") {
+    return (
+      <Popconfirm
+        title="Do you really want to remove this link?"
+        onConfirm={handleRemoveLinkConfirm}
+        onCancel={null}
+        okText="Yes"
+        cancelText="No"
+        placement="bottom"
+      >
+        <Tag
+          style={{
+            fontWeight: "bold",
+            cursor: "pointer",
+            color: "red",
+            backgroundColor: "coral"
+          }}
+          title={"Click to remove link..."}
+          onClick={e => {
+            e.stopPropagation();
+          }}
         >
           <NodeIndexOutlined /> <DeleteOutlined />
-        </Popconfirm>
-      )}
-    </Tag>
-  );
+        </Tag>
+      </Popconfirm>
+    );
+  }
+
+  if (linkTagStatus === "POTENTIAL_LINK") {
+    return (
+      <Popconfirm
+        title="Do you really want to add this link?"
+        onConfirm={(e)=>handleAddLinkConfirm(e, identifier)}
+        onCancel={null}
+        okText="Yes"
+        cancelText="No"
+        placement="bottom"
+      >
+        <Tag
+          style={{
+            fontWeight: "bold",
+            cursor: "pointer",
+            color: "green",
+            backgroundColor: "lightgreen"
+          }}
+          title={"Click to add link..."}
+          onClick={e => {
+            e.stopPropagation();
+          }}
+        >
+          <NodeIndexOutlined /> <PlusOutlined />
+        </Tag>
+      </Popconfirm>
+    );
+  }
 };
 
 export default LinkTag;

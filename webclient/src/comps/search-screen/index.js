@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Input, message } from "antd";
+import { Button, Card, Input, message } from "antd";
 import _ from "lodash";
 import axios from "axios";
 import LoadingMessage from "./comps/loading-message";
@@ -16,11 +16,11 @@ class SearchScreen extends Component {
     // searchTerm: "",
     resultSearchTerm: "",
     isLoading: false,
-    loadingStep: -1, // -1 ... not loading at all, 0 ... first step (initial search in individual sources), 1 ... second step (linking)
+    loadingStep: -1, // -1 ... not loading at all, 0 ... first step (initial searchBothSteps in individual sources), 1 ... second step (linking)
     hoverInfo: {},
     focusInfo: {},
     linkEditInfo: {},
-    nrComplete: -1,
+    nrComplete: 0,
     externalResources: undefined,
     resourcesState: undefined
   };
@@ -48,43 +48,86 @@ class SearchScreen extends Component {
 
   searchResource = async (platform, type, searchTerm) => {
     const messagePrefix = `[${platform} - ${type}]`;
-    console.log(messagePrefix, "search start...");
+    console.log(`\t\t${messagePrefix} searchResource...`, "start");
 
     const url = `/api/search-by-term/${platform}/${type}/${searchTerm}`;
-    const { data } = await axios.get(url);
 
-    this.setState(
-      prevState => ({
-        resourcesState: {
-          ...prevState.resourcesState,
-          [platform]: {
-            ...prevState.resourcesState[platform],
-            [type]: {
-              items: [
-                ...prevState.resourcesState[platform][type].items, // this is [] if mode !== "EDIT_LINKS"
-                ...data.results.map(r => ({
-                  ...r,
-                  isPartOf: [],
-                  resultStructure: data.resultStructure
-                }))
-              ],
-              isLoading: false
+    try {
+      const { data } = await axios.get(url);
+
+      if (this.state.searchFailed) {
+        // if the search failed somewhere else, we don't want to update the state anymore
+        console.log(
+          `\t\t${messagePrefix} searchResource...`,
+          "done, but already failed somewhere else."
+        );
+        return;
+      }
+
+      const filteredResults =
+        this.state.mode !== constants.mode.EDIT_LINKS
+          ? data.results
+          : data.results.filter(
+              r =>
+                !this.state.linkEditInfo.linkedItemsIdentifiers.includes(
+                  r.identifier
+                )
+            );
+
+      this.setState(
+        prevState => ({
+          resourcesState: {
+            ...prevState.resourcesState,
+            [platform]: {
+              ...prevState.resourcesState[platform],
+              [type]: {
+                items: [
+                  ...prevState.resourcesState[platform][type].items, // this is [] if mode !== "EDIT_LINKS"
+                  ...filteredResults.map(r => ({
+                    ...r,
+                    isPartOf: [],
+                    resultStructure: data.resultStructure
+                  }))
+                ],
+                isLoading: false
+              }
             }
-          }
-        },
-        nrComplete: prevState.nrComplete + 1
-      }),
-      this.updateLoadingMessage
-    );
+          },
+          nrComplete: prevState.nrComplete + 1
+        }),
+        () =>
+          this.updateLoadingMessage(
+            this.state.mode === constants.mode.EDIT_LINKS ? 1 : 2
+          )
+      );
 
-    console.log(messagePrefix, "...search done!");
+      console.log(
+        `\t\t${messagePrefix} searchResource... done (${
+          data.results.length
+        } items found${
+          this.state.mode === constants.mode.EDIT_LINKS
+            ? `, ${data.results.length - filteredResults.length} filtered out`
+            : ""
+        })`
+      );
+    } catch (error) {
+      const errorMessage = `\t\t${messagePrefix} searchResource... failed`;
+      console.error(errorMessage);
+      message.error({
+        content: errorMessage,
+        duration: 2.5,
+        key: LOADING_MESSAGE_KEY
+      });
+      this.setState({ searchFailed: true });
+    }
   };
 
-  updateLoadingMessage = () => {
+  updateLoadingMessage = (nrOfSteps, loadingStep) => {
     const numberOfResources = this.getResourcesFlat().length;
     const loadingMessage = (
       <LoadingMessage
-        loadingStep={0}
+        loadingStep={loadingStep}
+        nrOfSteps={nrOfSteps}
         nrComplete={this.state.nrComplete}
         nrTotal={numberOfResources}
       />
@@ -108,41 +151,37 @@ class SearchScreen extends Component {
     }));
   };
 
-  search = async () => {
-    this.cancelDebouncedSearch();
+  searchWithEditLinksMode = async () => {
+    this.updateLoadingMessage(1);
 
-    this.resetSearch(false);
+    await this.searchStep0();
 
-    this.updateLoadingMessage();
-
-    const { searchTerm } = this.state;
-    console.log("Start searching with searchTerm:", searchTerm);
-
-    const resourcesFlat = this.getResourcesFlat();
-    const numberOfResources = resourcesFlat.length;
-
-    const promisesStep0 = resourcesFlat.map(r =>
-      this.searchResource(r.platform, r.type, searchTerm)
-    );
-
-    await Promise.all(promisesStep0);
-    console.log("Search step 0 done.");
-
-    message.loading({
-      content: <LoadingMessage loadingStep={1} nrTotal={numberOfResources} />,
-      duration: 0,
+    // TODO: maybe also extract:
+    const numberOfResources = this.state.externalResources.length;
+    message.success({
+      content: (
+        <LoadingMessage
+          loadingStep={-1}
+          nrTotal={numberOfResources}
+          nrOfSteps={1}
+        />
+      ),
+      duration: 2.5,
       key: LOADING_MESSAGE_KEY
     });
+  };
 
-    this.setState({
-      isLoading: false,
-      loadingStep: 1,
-      resultSearchTerm: searchTerm
-    });
+  searchWithSearchMode = async () => {
+    this.updateLoadingMessage(2, 0);
 
-    await fetchLinks(this);
-    console.log("Search step 1 done.");
+    await this.searchStep0();
 
+    this.updateLoadingMessage(2, 1);
+
+    await this.searchStep1();
+
+    // TODO: maybe also extract:
+    const numberOfResources = this.state.externalResources.length;
     message.success({
       content: <LoadingMessage loadingStep={-1} nrTotal={numberOfResources} />,
       duration: 2.5,
@@ -150,14 +189,68 @@ class SearchScreen extends Component {
     });
   };
 
-  debouncedSearch = _.debounce(this.search, 1000);
+  searchStep0 = async () => {
+    const { searchTerm } = this.state;
+    console.log(
+      `\tSearch step 0 (with searchTerm '${searchTerm}')...`,
+      "start"
+    );
+
+    try {
+      const resourcesFlat = this.getResourcesFlat();
+
+      const promisesStep0 = resourcesFlat.map(r =>
+        this.searchResource(r.platform, r.type, searchTerm)
+      );
+
+      await Promise.all(promisesStep0);
+
+      console.log(
+        `\tSearch step 0 (with searchTerm '${searchTerm}')...`,
+        "done"
+      );
+    } catch (error) {
+      const errorMessage = `\tSearch step 0 (with searchTerm '${searchTerm}')... failed`;
+      console.error(errorMessage);
+      message.error({
+        content: errorMessage,
+        duration: 2.5,
+        key: LOADING_MESSAGE_KEY
+      });
+      throw new Error(error);
+    }
+  };
+
+  searchStep1 = async () => {
+    console.log(`\tSearch step 1...`, "start");
+
+    this.setState({
+      isLoading: false,
+      loadingStep: 1
+      // resultSearchTerm: searchTerm  TODO is this still needed?
+    });
+
+    try {
+      await fetchLinks(this);
+    } catch (error) {
+      const errorMessage = `\tSearch step 1... failed`;
+      console.error(errorMessage);
+      message.error({
+        content: errorMessage,
+        duration: 2.5,
+        key: LOADING_MESSAGE_KEY
+      });
+      throw new Error(error);
+    }
+    console.log(`\tSearch step 1...`, "done");
+  };
 
   cancelDebouncedSearch = () => this.debouncedSearch.cancel();
 
-  resetSearch = (resetSearchTerm = true) => {
+  resetSearch = (resetSearchTerm = true, markLinkedItemsAsSticky = false) => {
     const resourcesState = this.getInitialResources(false);
 
-    if (this.state.mode === constants.mode.EDIT_LINKS) {
+    if (markLinkedItemsAsSticky) {
       this.state.externalResources.forEach(er => {
         this.state.resourcesState[er.platform][er.type].items.forEach(item => {
           if (item.isSticky) {
@@ -172,9 +265,32 @@ class SearchScreen extends Component {
       resultSearchTerm: "",
       nrComplete: 0,
       isLoading: false,
+      searchFailed: false,
       resourcesState
     });
   };
+
+  search = async () => {
+    const { mode } = this.state;
+
+    this.cancelDebouncedSearch();
+
+    this.resetSearch(false, mode === constants.mode.EDIT_LINKS);
+
+    console.log(`Search in mode ${mode}...`, "start");
+    try {
+      if (mode === constants.mode.EDIT_LINKS) {
+        await this.searchWithEditLinksMode();
+      } else {
+        await this.searchWithSearchMode();
+      }
+      console.log(`Search in mode ${mode}...`, "done");
+    } catch (error) {
+      console.error(`Search in mode ${mode}...`, "failed");
+    }
+  };
+
+  debouncedSearch = _.debounce(this.search, 1000);
 
   handleHoverItem = (identifier, linkIds) => {
     if (this.state.mode === constants.mode.EDIT_LINKS) {
@@ -206,17 +322,20 @@ class SearchScreen extends Component {
 
   handleLinkTagClick = (identifier, linkIds) => {
     console.log("handleLinkTagClick with", identifier);
+
     if (identifier === this.state.linkEditInfo.activeIdentifier) {
       this.setState({ mode: constants.mode.SEARCH, linkEditInfo: {} });
     } else {
-      this.handleHoverItem() // to reset hovering
+      this.handleHoverItem(); // to reset hovering
 
       // mark linked items as sticky:
       const resourcesState = _.cloneDeep(this.state.resourcesState);
+      const linkedItemsIdentifiers = [];
       this.state.externalResources.forEach(er => {
         resourcesState[er.platform][er.type].items.forEach(item => {
           if (linkIds.some(linkId => item.isPartOf.includes(linkId))) {
             item.isSticky = true;
+            linkedItemsIdentifiers.push(item.identifier);
           }
         });
       });
@@ -225,7 +344,8 @@ class SearchScreen extends Component {
         mode: constants.mode.EDIT_LINKS,
         linkEditInfo: {
           activeIdentifier: identifier,
-          linkedItemsIdentifiers: linkIds
+          linkIds,
+          linkedItemsIdentifiers
         },
         resourcesState
       });
@@ -234,6 +354,84 @@ class SearchScreen extends Component {
 
   handleRemoveLinkConfirm = identifier => {
     console.log("handleRemoveLinkConfirm", identifier);
+  };
+
+  handleAddLinkConfirm = async (event, identifier) => {
+    const activeElement = this.getItemByIdentifier(
+      this.state.linkEditInfo.activeIdentifier
+    );
+    const linkElement = this.getItemByIdentifier(identifier);
+
+    try {
+      const newLinkId = (
+        await axios.post(`/api/link/`, {
+          node1: {
+            platform: activeElement.platform,
+            type: activeElement.type,
+            id: activeElement.id
+          },
+          node2: {
+            platform: linkElement.platform,
+            type: linkElement.type,
+            id: linkElement.id
+          }
+        })
+      ).data;
+
+      const resourcesState = this.getUpdatedResourcesStateWithNewLinkId(
+        [activeElement.identifier, identifier],
+        newLinkId
+      );
+
+      this.setState({
+        resourcesState,
+        linkEditInfo: {
+          ...this.state.linkEditInfo,
+          linkIds: [...this.state.linkEditInfo.linkIds, newLinkId],
+          linkedItemsIdentifiers: [
+            ...this.state.linkEditInfo.linkedItemsIdentifiers,
+            identifier
+          ]
+        }
+      });
+
+      message.success({
+        content: "Link successfully created!",
+        duration: 2.5,
+        key: LOADING_MESSAGE_KEY
+      });
+    } catch (error) {
+      message.error({
+        content: "Link creation failed!",
+        duration: 2.5,
+        key: LOADING_MESSAGE_KEY
+      });
+    }
+  };
+
+  getUpdatedResourcesStateWithNewLinkId = (identifiers, newLinkId) => {
+    const clonedResourcesState = _.cloneDeep(this.state.resourcesState);
+    this.state.externalResources.forEach(er => {
+      clonedResourcesState[er.platform][er.type].items.forEach(item => {
+        if (identifiers.includes(item.identifier)) {
+          item.isPartOf = [...item.isPartOf, newLinkId];
+        }
+      });
+    });
+    return clonedResourcesState;
+  };
+
+  getItemByIdentifier = identifier => {
+    const snippets = identifier.split("_");
+    const platform = snippets[0];
+    const type = snippets[1];
+    return {
+      ...this.state.resourcesState[platform][type].items.filter(
+        r => r.identifier === identifier
+      )[0],
+      platform,
+      type
+    };
   };
 
   render() {
@@ -253,41 +451,36 @@ class SearchScreen extends Component {
     const resourcesFlat = this.getResourcesFlat();
     const numberOfResources = externalResources.length;
 
-    const haveResults = searchTerm.length > 0;
-
     return (
       <div
         style={{
           display: "flex",
           flexDirection: "column",
-          flex: 1,
-          marginTop: "2rem"
+          flex: 1
         }}
       >
-        <div
-          style={{ position: "absolute", top: 0, right: 0, fontWeight: "bold" }}
+        <Card
+          size="small"
+          style={{
+            position: "absolute",
+            right: 0,
+            borderRadius: "0.5rem",
+            margin: "1.5rem",
+            zIndex: 5,
+            width: 260
+          }}
+          bodyStyle={{ height: "max-content",backgroundColor:"#E0E0E0" }}
         >
-          {this.state.mode === "FOCUS" && (
-            <Button
-              type="primary"
-              onClick={() => this.setState({ mode: "SEARCH", focusInfo: {} })}
-            >
-              Focused-View-Mode -> Click to Leave
-            </Button>
-          )}
-          {this.state.mode === "EDIT_LINKS" && (
-            <Button
-              type="primary"
-              onClick={() =>
-                this.setState({ mode: "SEARCH", linkEditInfo: {} })
-              }
-            >
-              Edit-Links-Mode -> Click to Leave
-            </Button>
-          )}
-        </div>
+          <div>Current View:</div>
+          <h1 style={{ margin: 0 }}>{this.state.mode}</h1>
+        </Card>
         <h1
-          style={{ fontWeight: "bold", letterSpacing: "0.45rem", opacity: 0.6 }}
+          style={{
+            fontWeight: "bold",
+            letterSpacing: "0.45rem",
+            opacity: 0.6,
+            marginTop: "2rem"
+          }}
         >
           MULTI REPOSITORY
         </h1>
@@ -355,10 +548,10 @@ class SearchScreen extends Component {
                 handleClickItem={this.handleClickItem}
                 focusInfo={this.state.focusInfo}
                 linkEditInfo={this.state.linkEditInfo}
-                haveResults={haveResults}
                 columnWidth={`${90 / numberOfResources}vw`}
                 handleLinkTagClick={this.handleLinkTagClick}
                 handleRemoveLinkConfirm={this.handleRemoveLinkConfirm}
+                handleAddLinkConfirm={this.handleAddLinkConfirm}
               />
             ))}
           </div>

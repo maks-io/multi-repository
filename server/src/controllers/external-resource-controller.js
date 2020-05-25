@@ -41,7 +41,7 @@ const _getExternalResources = async (req, res) => {
 };
 
 /*
- * Search external resource for 0 to n objects - via search term.
+ * Search external resource for 0 to n objects - via searchBothSteps term.
  *
  * Gets called by client.
  */
@@ -60,7 +60,7 @@ const searchByTerm = async (req, res) => {
   }
 
   const urlForSearchByTerm = config.QUERY.URL;
-  const token = process.env[`${platform}_TOKEN`];
+  const token = process.env[`TOKEN_${platform}_${type}`];
   const preparedUrl = urlForSearchByTerm
     .replace("[SEARCH_TERM]", preparedSearchTerm)
     .replace("[TOKEN]", token);

@@ -21,7 +21,7 @@ class LoadingStepSearchProgress extends Component {
         <Progress
           type={"circle"}
           percent={percent}
-          format={() => `${nrComplete}/${nrTotal}`}
+          format={() => `${nrComplete} / ${nrTotal}`}
           width={80}
         />
       </div>
@@ -41,10 +41,10 @@ class LoadingStepLinkProgress extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-      clearInterval(this.state.intervalId);
+    clearInterval(this.state.intervalId);
   }
 
-    shuffleProgress = () => {
+  shuffleProgress = () => {
     if (this.props.isDone) {
       clearInterval(this.state.intervalId);
     } else {
@@ -122,7 +122,7 @@ class LoadingStep extends Component {
 
 class LoadingMessage extends Component {
   render() {
-    const { loadingStep, nrTotal, nrComplete } = this.props;
+    const { loadingStep, nrTotal, nrComplete, nrOfSteps = 2 } = this.props;
 
     return (
       <div
@@ -143,12 +143,14 @@ class LoadingMessage extends Component {
             nrComplete === 0 || Boolean(nrComplete) ? nrComplete : nrTotal
           }
         />
-        <LoadingStep
-          isActive={loadingStep === 1}
-          isDone={loadingStep === -1}
-          step={1}
-          loadingStep={loadingStep}
-        />
+        {nrOfSteps === 2 && (
+          <LoadingStep
+            isActive={loadingStep === 1}
+            isDone={loadingStep === -1}
+            step={1}
+            loadingStep={loadingStep}
+          />
+        )}
       </div>
     );
   }

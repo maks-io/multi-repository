@@ -12,6 +12,7 @@ router.get(
 );
 
 /***** Links *****/
-router.post("/api/links", linksController.fetchLinks);
+router.post("/api/links", linksController.fetchLinks); // this gets all links according to step 0 search results
+router.post("/api/link", linksController.postLink); // this posts a new link
 
 module.exports = router;

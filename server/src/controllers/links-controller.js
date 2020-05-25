@@ -19,9 +19,9 @@ exports.fetchLinks = async (req, res) => {
     console.log("\n/////", "Search Step 2 - Link Logic - DONE", "/////\n");
 
     return res.json(newResources);
-  } catch (err) {
+  } catch (error) {
     console.log("\n/////", "Search Step 2 - Link Logic - ERROR", "/////\n");
-    console.error(err);
+    console.error(error);
     res.sendStatus(500);
   }
 };
@@ -152,4 +152,24 @@ const makeResultsDistinct = results => {
 
 const fetchMissingResource = (platform, type, id, groupId) => {
   return getById(platform, type, id, groupId);
+};
+
+exports.postLink = async (req, res) => {
+  console.log("Post new link...", "start");
+  const apiData = req.body;
+
+  try {
+    const nodes = [apiData.node1, apiData.node2];
+    await Link.create({ nodes });
+
+    // link creation was successful
+    const linkColor = randomColor();
+
+    console.log("Post new link...", "done");
+    res.json(linkColor);
+  } catch (error) {
+    console.log("Post new link...", "error");
+    console.error(error);
+    res.sendStatus(500);
+  }
 };

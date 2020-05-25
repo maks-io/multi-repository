@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Icon } from "antd";
 import ResultItem from "./comps/result-item";
 import ResultColumnHeader from "./comps/result-column-header";
-import { createIdentifier } from "../../../../services/create-identifier";
 
 class ResultColumn extends Component {
   render() {
@@ -19,10 +18,10 @@ class ResultColumn extends Component {
       handleClickItem,
       focusInfo,
       linkEditInfo,
-      haveResults,
       columnWidth,
       mode,
       handleRemoveLinkConfirm,
+      handleAddLinkConfirm,
       handleLinkTagClick
     } = this.props;
 
@@ -41,8 +40,7 @@ class ResultColumn extends Component {
             style={{
               display: "flex",
               flexDirection: "column",
-              flex: 1,
-              opacity: !haveResults && 0.5
+              flex: 1
             }}
           >
             <div style={{ display: "flex", flexDirection: "column" }}>
@@ -86,6 +84,7 @@ class ResultColumn extends Component {
                       fetchStep={fetchStep}
                       handleLinkTagClick={handleLinkTagClick}
                       handleRemoveLinkConfirm={handleRemoveLinkConfirm}
+                      handleAddLinkConfirm={handleAddLinkConfirm}
                     />
                   ))}
                 </div>
