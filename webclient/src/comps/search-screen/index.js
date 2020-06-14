@@ -352,8 +352,28 @@ class SearchScreen extends Component {
     }
   };
 
-  handleRemoveLinkConfirm = identifier => {
-    console.log("handleRemoveLinkConfirm", identifier);
+  handleRemoveLinkConfirm = async identifier => {
+    const node1 = this.getItemByIdentifier(
+      this.state.linkEditInfo.activeIdentifier
+    );
+    const node2 = this.getItemByIdentifier(identifier);
+
+    await axios.delete(`/api/link/`, {
+      data: {
+        node1: {
+          platform: node1.platform,
+          type: node1.type,
+          id: node1.id
+        },
+        node2: {
+          platform: node2.platform,
+          type: node2.type,
+          id: node2.id
+        }
+      }
+    });
+
+    // TODO adjust ui state after successful delete
   };
 
   handleAddLinkConfirm = async (event, identifier) => {

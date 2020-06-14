@@ -105,7 +105,7 @@ const LinkTag = props => {
     return (
       <Popconfirm
         title="Do you really want to remove this link?"
-        onConfirm={handleRemoveLinkConfirm}
+        onConfirm={() => handleRemoveLinkConfirm(identifier)}
         onCancel={null}
         okText="Yes"
         cancelText="No"
@@ -133,7 +133,7 @@ const LinkTag = props => {
     return (
       <Popconfirm
         title="Do you really want to add this link?"
-        onConfirm={(e)=>handleAddLinkConfirm(e, identifier)}
+        onConfirm={e => handleAddLinkConfirm(e, identifier)}
         onCancel={null}
         okText="Yes"
         cancelText="No"

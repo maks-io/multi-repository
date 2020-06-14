@@ -173,3 +173,36 @@ exports.postLink = async (req, res) => {
     res.sendStatus(500);
   }
 };
+
+exports.deleteLink = async (req, res) => {
+  console.log("Delete link...", "start");
+  const apiData = req.body;
+  const { node1, node2 } = apiData;
+
+  try {
+    const query = {
+      $and: [
+        {
+          nodes: {
+            $elemMatch: node1
+          }
+        },
+        {
+          nodes: {
+            $elemMatch: node2
+          }
+        }
+      ]
+    };
+    const deleteResult = await Link.findOneAndDelete(query);
+
+    console.log("deleteResult:", deleteResult);
+
+    console.log("Delete new link...", "done");
+    res.sendStatus(200);
+  } catch (error) {
+    console.log("Delete new link...", "error");
+    console.error(error);
+    res.sendStatus(500);
+  }
+};
