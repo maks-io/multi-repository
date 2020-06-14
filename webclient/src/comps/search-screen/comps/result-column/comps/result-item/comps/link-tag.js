@@ -105,7 +105,14 @@ const LinkTag = props => {
     return (
       <Popconfirm
         title="Do you really want to remove this link?"
-        onConfirm={() => handleRemoveLinkConfirm(identifier)}
+        onConfirm={() => {
+          const linkIdsOfActiveElement = linkEditInfo.linkIds;
+          const linkIdsOfClickedElement = isPartOf;
+          const linkId = linkIdsOfActiveElement.filter(value =>
+            linkIdsOfClickedElement.includes(value)
+          )[0];
+          handleRemoveLinkConfirm(identifier, linkId);
+        }}
         onCancel={null}
         okText="Yes"
         cancelText="No"

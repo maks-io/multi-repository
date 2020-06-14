@@ -321,11 +321,13 @@ class SearchScreen extends Component {
   };
 
   handleLinkTagClick = (identifier, linkIds) => {
-    console.log("handleLinkTagClick with", identifier);
-
     if (identifier === this.state.linkEditInfo.activeIdentifier) {
+      // already in mode EDIT_LINKS => go back to mode SEARCH:
+
       this.setState({ mode: constants.mode.SEARCH, linkEditInfo: {} });
     } else {
+      // currently in mode SEARCH => go to mode EDIT_LINKS:
+
       this.handleHoverItem(); // to reset hovering
 
       // mark linked items as sticky:
@@ -352,7 +354,7 @@ class SearchScreen extends Component {
     }
   };
 
-  handleRemoveLinkConfirm = async identifier => {
+  handleRemoveLinkConfirm = async (identifier, linkId) => {
     const node1 = this.getItemByIdentifier(
       this.state.linkEditInfo.activeIdentifier
     );
@@ -373,7 +375,24 @@ class SearchScreen extends Component {
       }
     });
 
-    // TODO adjust ui state after successful delete
+    // now remove the link on UI side:
+    const clonedResourcesState = _.cloneDeep(this.state.resourcesState);
+    this.state.externalResources.forEach(er => {
+      clonedResourcesState[er.platform][er.type].items.forEach(item => {
+        item.isPartOf = item.isPartOf.filter(id => id !== linkId);
+      });
+    });
+
+    this.setState({
+      resourcesState: clonedResourcesState,
+      linkEditInfo: {
+        activeIdentifier: this.state.linkEditInfo.activeIdentifier,
+        linkIds: this.state.linkEditInfo.linkIds.filter(id => id !== linkId),
+        linkedItemsIdentifiers: this.state.linkEditInfo.linkedItemsIdentifiers.filter(
+          l => l !== identifier
+        )
+      }
+    });
   };
 
   handleAddLinkConfirm = async (event, identifier) => {
