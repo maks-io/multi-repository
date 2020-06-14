@@ -360,39 +360,53 @@ class SearchScreen extends Component {
     );
     const node2 = this.getItemByIdentifier(identifier);
 
-    await axios.delete(`/api/link/`, {
-      data: {
-        node1: {
-          platform: node1.platform,
-          type: node1.type,
-          id: node1.id
-        },
-        node2: {
-          platform: node2.platform,
-          type: node2.type,
-          id: node2.id
+    try {
+      await axios.delete(`/api/link/`, {
+        data: {
+          node1: {
+            platform: node1.platform,
+            type: node1.type,
+            id: node1.id
+          },
+          node2: {
+            platform: node2.platform,
+            type: node2.type,
+            id: node2.id
+          }
         }
-      }
-    });
-
-    // now remove the link on UI side:
-    const clonedResourcesState = _.cloneDeep(this.state.resourcesState);
-    this.state.externalResources.forEach(er => {
-      clonedResourcesState[er.platform][er.type].items.forEach(item => {
-        item.isPartOf = item.isPartOf.filter(id => id !== linkId);
       });
-    });
 
-    this.setState({
-      resourcesState: clonedResourcesState,
-      linkEditInfo: {
-        activeIdentifier: this.state.linkEditInfo.activeIdentifier,
-        linkIds: this.state.linkEditInfo.linkIds.filter(id => id !== linkId),
-        linkedItemsIdentifiers: this.state.linkEditInfo.linkedItemsIdentifiers.filter(
-          l => l !== identifier
-        )
-      }
-    });
+      // now remove the link on UI side:
+      const clonedResourcesState = _.cloneDeep(this.state.resourcesState);
+      this.state.externalResources.forEach(er => {
+        clonedResourcesState[er.platform][er.type].items.forEach(item => {
+          item.isPartOf = item.isPartOf.filter(id => id !== linkId);
+        });
+      });
+
+      this.setState({
+        resourcesState: clonedResourcesState,
+        linkEditInfo: {
+          activeIdentifier: this.state.linkEditInfo.activeIdentifier,
+          linkIds: this.state.linkEditInfo.linkIds.filter(id => id !== linkId),
+          linkedItemsIdentifiers: this.state.linkEditInfo.linkedItemsIdentifiers.filter(
+            l => l !== identifier
+          )
+        }
+      });
+
+      message.success({
+        content: "Link successfully removed!",
+        duration: 2.5,
+        key: LOADING_MESSAGE_KEY
+      });
+    } catch (error) {
+      message.error({
+        content: "Link removal failed!",
+        duration: 2.5,
+        key: LOADING_MESSAGE_KEY
+      });
+    }
   };
 
   handleAddLinkConfirm = async (event, identifier) => {
