@@ -460,8 +460,10 @@ class SearchScreen extends Component {
         }}
       >
         <Card
+          onClick={() => this.setState({ mode: constants.mode.SEARCH })}
           size="small"
           style={{
+            cursor: "pointer",
             position: "absolute",
             right: 0,
             borderRadius: "0.5rem",
@@ -469,10 +471,17 @@ class SearchScreen extends Component {
             zIndex: 5,
             width: 260
           }}
-          bodyStyle={{ height: "max-content",backgroundColor:"#E0E0E0" }}
+          bodyStyle={{ height: "max-content", backgroundColor: "#E0E0E0" }}
         >
           <div>Current View:</div>
           <h1 style={{ margin: 0 }}>{this.state.mode}</h1>
+          <div>
+            {this.state.mode !== constants.mode.SEARCH ? (
+              <small>(click to get back to SEARCH)</small>
+            ) : (
+              ""
+            )}
+          </div>
         </Card>
         <h1
           style={{
@@ -493,7 +502,7 @@ class SearchScreen extends Component {
             }
             style={{
               opacity:
-                (this.state.focusInfo.identifier ||
+                (this.state.mode === constants.mode.FOCUS ||
                   this.state.loadingStep !== -1) &&
                 "0.25",
               width: "20rem"
