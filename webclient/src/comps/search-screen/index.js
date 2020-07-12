@@ -11,7 +11,7 @@ const LOADING_MESSAGE_KEY = "loadingMessage";
 
 class SearchScreen extends Component {
   state = {
-    mode: "SEARCH", // one of 'SEARCH', 'FOCUS' and 'EDIT_LINKS'
+    mode: constants.mode.SEARCH, // one of 'SEARCH', 'FOCUS' and 'EDIT_LINKS'
     // searchTerm: "Default Search Term",
     searchTerm: "",
     resultSearchTerm: "",
@@ -306,7 +306,7 @@ class SearchScreen extends Component {
 
   handleClickItem = (identifier, linkIds) => {
     console.log("handleClickItem with", identifier);
-    if (this.state.mode === "EDIT_LINKS") {
+    if (this.state.mode === constants.mode.EDIT_LINKS) {
       // do nothing
     } else if (!identifier) {
       this.setState({ mode: constants.mode.SEARCH, focusInfo: {} });
@@ -555,7 +555,8 @@ class SearchScreen extends Component {
         >
           <Input.Search
             disabled={
-              this.state.mode === "FOCUS" || this.state.loadingStep !== -1
+              this.state.mode === constants.mode.FOCUS ||
+              this.state.loadingStep !== -1
             }
             style={{
               opacity:

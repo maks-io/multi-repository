@@ -57,8 +57,8 @@ class ResultItem extends Component {
     }
 
     const isHighlighted =
-      (mode === "FOCUS" && focusInfo.identifier === data.identifier) ||
-      (mode === "EDIT_LINKS" && linkEditInfo.identifier === data.identifier);
+      (mode === constants.mode.FOCUS && focusInfo.identifier === data.identifier) ||
+      (mode === constants.mode.EDIT_LINKS && linkEditInfo.identifier === data.identifier);
 
     return (
       <Card
