@@ -12,8 +12,8 @@ const LOADING_MESSAGE_KEY = "loadingMessage";
 class SearchScreen extends Component {
   state = {
     mode: "SEARCH", // one of 'SEARCH', 'FOCUS' and 'EDIT_LINKS'
-    searchTerm: "Bernhard Gößwein",
-    // searchTerm: "",
+    // searchTerm: "Default Search Term",
+    searchTerm: "",
     resultSearchTerm: "",
     isLoading: false,
     loadingStep: -1, // -1 ... not loading at all, 0 ... first step (initial searchBothSteps in individual sources), 1 ... second step (linking)
