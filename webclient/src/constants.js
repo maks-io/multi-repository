@@ -1,6 +1,5 @@
 const constants = {
-  platforms: ["GITLAB", "GITHUB", "INVENIO", "REPOSITUM", "TISS"],
-  types: ["PERSON", "PROJECT"]
+  mode: { SEARCH: "SEARCH", FOCUS: "FOCUS", EDIT_LINKS: "EDIT_LINKS" }
 };
 
 module.exports = { constants };

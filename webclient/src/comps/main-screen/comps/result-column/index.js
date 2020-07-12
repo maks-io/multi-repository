@@ -2,14 +2,14 @@ import React, { Component } from "react";
 import { Icon } from "antd";
 import ResultItem from "./comps/result-item";
 import ResultColumnHeader from "./comps/result-column-header";
-import { createIdentifier } from "../../../../services/create-identifier";
 
 class ResultColumn extends Component {
   render() {
     const {
       platform,
       type,
-      logoUrl,fallbackAvatar,
+      logoUrl,
+      fallbackAvatar,
       items,
       isLoading,
       fetchStep,
@@ -17,8 +17,12 @@ class ResultColumn extends Component {
       hoverInfo,
       handleClickItem,
       focusInfo,
-      haveResults,
-      columnWidth
+      linkEditInfo,
+      columnWidth,
+      mode,
+      handleRemoveLinkConfirm,
+      handleAddLinkConfirm,
+      handleLinkTagClick
     } = this.props;
 
     return (
@@ -36,8 +40,7 @@ class ResultColumn extends Component {
             style={{
               display: "flex",
               flexDirection: "column",
-              flex: 1,
-              opacity: !haveResults && 0.5
+              flex: 1
             }}
           >
             <div style={{ display: "flex", flexDirection: "column" }}>
@@ -65,17 +68,23 @@ class ResultColumn extends Component {
                 >
                   {items.map((i, index) => (
                     <ResultItem
-                      key={createIdentifier(platform, type, index)} // this is a dummy identifier
+                      key={i.identifier}
                       data={i}
                       index={index}
+                      mode={mode}
                       platform={platform}
                       type={type}
+                      identifier={i.identifier}
                       fallbackAvatar={fallbackAvatar}
                       handleHoverItem={handleHoverItem}
                       hoverInfo={hoverInfo}
                       handleClickItem={handleClickItem}
                       focusInfo={focusInfo}
+                      linkEditInfo={linkEditInfo}
                       fetchStep={fetchStep}
+                      handleLinkTagClick={handleLinkTagClick}
+                      handleRemoveLinkConfirm={handleRemoveLinkConfirm}
+                      handleAddLinkConfirm={handleAddLinkConfirm}
                     />
                   ))}
                 </div>

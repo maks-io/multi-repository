@@ -2,7 +2,6 @@ const { createIdentifier } = require("../services/create-identifier");
 const _ = require("lodash");
 const randomColor = require("randomcolor");
 const { getById } = require("./external-resource-controller");
-const { mapResults } = require("../services/map-results");
 const { processResults } = require("../services/process-results");
 const Link = require("../models/Link");
 const { externalApiConfig } = require("../external-apis");
@@ -19,9 +18,9 @@ exports.fetchLinks = async (req, res) => {
     console.log("\n/////", "Search Step 2 - Link Logic - DONE", "/////\n");
 
     return res.json(newResources);
-  } catch (err) {
+  } catch (error) {
     console.log("\n/////", "Search Step 2 - Link Logic - ERROR", "/////\n");
-    console.error(err);
+    console.error(error);
     res.sendStatus(500);
   }
 };
@@ -152,4 +151,57 @@ const makeResultsDistinct = results => {
 
 const fetchMissingResource = (platform, type, id, groupId) => {
   return getById(platform, type, id, groupId);
+};
+
+exports.postLink = async (req, res) => {
+  console.log("Post new link...", "start");
+  const apiData = req.body;
+
+  try {
+    const nodes = [apiData.node1, apiData.node2];
+    await Link.create({ nodes });
+
+    // link creation was successful
+    const linkColor = randomColor();
+
+    console.log("Post new link...", "done");
+    res.json(linkColor);
+  } catch (error) {
+    console.log("Post new link...", "error");
+    console.error(error);
+    res.sendStatus(500);
+  }
+};
+
+exports.deleteLink = async (req, res) => {
+  console.log("Delete link...", "start");
+  const apiData = req.body;
+  const { node1, node2 } = apiData;
+
+  try {
+    const query = {
+      $and: [
+        {
+          nodes: {
+            $elemMatch: node1
+          }
+        },
+        {
+          nodes: {
+            $elemMatch: node2
+          }
+        }
+      ]
+    };
+    const deleteResult = await Link.findOneAndDelete(query);
+
+    console.log("deleteResult:", deleteResult);
+
+    console.log("Delete new link...", "done");
+    res.sendStatus(200);
+  } catch (error) {
+    console.log("Delete new link...", "error");
+    console.error(error);
+    res.sendStatus(500);
+  }
 };
