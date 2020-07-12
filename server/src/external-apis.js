@@ -10,7 +10,18 @@ const externalApiConfig = {
         },
         RESULT: {
           PATH: "items",
-          STRUCTURE: { id: "id", title: "login", avatar: "avatar_url" }
+          TRANSFORM_FUNCTION: result => ({
+            id: result.id,
+            title: result.login,
+            avatar: result.avatar_url,
+            originalSourceUrl: result.html_url
+          }),
+          STRUCTURE: {
+            id: "id",
+            title: "title",
+            avatar: "avatar",
+            originalSourceUrl: "originalSourceUrl"
+          }
         }
       },
       GET_BY_ID: {
@@ -19,7 +30,18 @@ const externalApiConfig = {
         },
         RESULT: {
           PATH: "items",
-          STRUCTURE: { id: "id", title: "login", avatar: "avatar_url" }
+          TRANSFORM_FUNCTION: result => ({
+            id: result.id,
+            title: result.login,
+            avatar: result.avatar_url,
+            originalSourceUrl: result.html_url
+          }),
+          STRUCTURE: {
+            id: "id",
+            title: "title",
+            avatar: "avatar",
+            originalSourceUrl: "originalSourceUrl"
+          }
         }
       }
     },
@@ -32,7 +54,16 @@ const externalApiConfig = {
         },
         RESULT: {
           PATH: "items",
-          STRUCTURE: { id: "id", title: "name" }
+          TRANSFORM_FUNCTION: result => ({
+            id: result.id,
+            title: result.name,
+            originalSourceUrl: result.html_url
+          }),
+          STRUCTURE: {
+            id: "id",
+            title: "title",
+            originalSourceUrl: "originalSourceUrl"
+          }
         }
       },
       GET_BY_ID: {
@@ -40,7 +71,16 @@ const externalApiConfig = {
           URL: "https://api.github.com/repositories/[ID]"
         },
         RESULT: {
-          STRUCTURE: { id: "id", title: "name" }
+          TRANSFORM_FUNCTION: result => ({
+            id: result.id,
+            title: result.name,
+            originalSourceUrl: result.html_url
+          }),
+          STRUCTURE: {
+            id: "id",
+            title: "title",
+            originalSourceUrl: "originalSourceUrl"
+          }
         }
       }
     }
@@ -56,7 +96,18 @@ const externalApiConfig = {
             "https://gitlab.com/api/v4/search?private_token=[TOKEN]&scope=users&search=[SEARCH_TERM]"
         },
         RESULT: {
-          STRUCTURE: { id: "id", title: "name", avatar: "avatar_url" }
+          TRANSFORM_FUNCTION: result => ({
+            id: result.id,
+            title: result.name,
+            avatar: result.avatar_url,
+            originalSourceUrl: result.web_url
+          }),
+          STRUCTURE: {
+            id: "id",
+            title: "name",
+            avatar: "avatar",
+            originalSourceUrl: "originalSourceUrl"
+          }
         }
       },
       GET_BY_ID: {
@@ -64,7 +115,18 @@ const externalApiConfig = {
           URL: "https://gitlab.com/api/v4/users/[ID]"
         },
         RESULT: {
-          STRUCTURE: { id: "id", title: "name", avatar: "avatar_url" }
+          TRANSFORM_FUNCTION: result => ({
+            id: result.id,
+            title: result.name,
+            avatar: result.avatar_url,
+            originalSourceUrl: result.web_url
+          }),
+          STRUCTURE: {
+            id: "id",
+            title: "name",
+            avatar: "avatar",
+            originalSourceUrl: "originalSourceUrl"
+          }
         }
       }
     },
@@ -77,7 +139,16 @@ const externalApiConfig = {
             "https://gitlab.com/api/v4/search?private_token=[TOKEN]&scope=projects&search=[SEARCH_TERM]"
         },
         RESULT: {
-          STRUCTURE: { id: "id", title: "name" }
+          TRANSFORM_FUNCTION: result => ({
+            id: result.id,
+            title: result.name,
+            originalSourceUrl: result.web_url
+          }),
+          STRUCTURE: {
+            id: "id",
+            title: "title",
+            originalSourceUrl: "originalSourceUrl"
+          }
         }
       },
       GET_BY_ID: {
@@ -85,7 +156,16 @@ const externalApiConfig = {
           URL: "https://gitlab.com/api/v4/projects/[ID]"
         },
         RESULT: {
-          STRUCTURE: { id: "id", title: "name" }
+          TRANSFORM_FUNCTION: result => ({
+            id: result.id,
+            title: result.name,
+            originalSourceUrl: result.web_url
+          }),
+          STRUCTURE: {
+            id: "id",
+            title: "title",
+            originalSourceUrl: "originalSourceUrl"
+          }
         }
       }
     }
@@ -106,9 +186,15 @@ const externalApiConfig = {
             title: `${result.first_name} ${result.last_name}`,
             avatar: result.picture_uri
               ? `https://tiss.tuwien.ac.at${result.picture_uri}`
-              : undefined
+              : undefined,
+            originalSourceUrl: `https://tiss.tuwien.ac.at/${result.card_uri}`
           }),
-          STRUCTURE: { id: "id", title: "title", avatar: "avatar" }
+          STRUCTURE: {
+            id: "id",
+            title: "title",
+            avatar: "avatar",
+            originalSourceUrl: "originalSourceUrl"
+          }
         }
       },
       GET_BY_ID: {
@@ -119,9 +205,17 @@ const externalApiConfig = {
           TRANSFORM_FUNCTION: result => ({
             id: result.tiss_id,
             title: `${result.first_name} ${result.last_name}`,
-            avatar: `https://tiss.tuwien.ac.at/${result.picture_uri}`
+            avatar: result.picture_uri
+              ? `https://tiss.tuwien.ac.at${result.picture_uri}`
+              : undefined,
+            originalSourceUrl: `https://tiss.tuwien.ac.at/${result.card_uri}`
           }),
-          STRUCTURE: { id: "id", title: "title", avatar: "avatar" }
+          STRUCTURE: {
+            id: "id",
+            title: "title",
+            avatar: "avatar",
+            originalSourceUrl: "originalSourceUrl"
+          }
         }
       }
     },
@@ -135,7 +229,16 @@ const externalApiConfig = {
         },
         RESULT: {
           PATH: "project",
-          STRUCTURE: { id: "titleEn", title: "titleEn" }
+          TRANSFORM_FUNCTION: result => ({
+            id: result.titleEn,
+            title: result.titleEn,
+            originalSourceUrl: `https://tiss.tuwien.ac.at/fpl/project/index.xhtml?id=${result.projectId}`
+          }),
+          STRUCTURE: {
+            id: "id",
+            title: "title",
+            originalSourceUrl: "originalSourceUrl"
+          }
         }
       },
       GET_BY_ID: {
@@ -144,7 +247,18 @@ const externalApiConfig = {
         },
         RESULT: {
           PATH: "project",
-          STRUCTURE: { id: "titleEn", title: "titleEn" }
+          TRANSFORM_FUNCTION: result => {
+            return {
+              id: result.titleEn,
+              title: result.titleEn,
+              originalSourceUrl: `https://tiss.tuwien.ac.at/fpl/project/index.xhtml?id=${result.id}`
+            };
+          },
+          STRUCTURE: {
+            id: "id",
+            title: "title",
+            originalSourceUrl: "originalSourceUrl"
+          }
         }
       }
     }
@@ -161,9 +275,19 @@ const externalApiConfig = {
         },
         RESULT: {
           PATH: "results",
+          TRANSFORM_FUNCTION: result => {
+            return {
+              id: result.result.metadata["oaf:entity"]["oaf:result"].originalId,
+              title:
+                result.result.metadata["oaf:entity"]["oaf:result"].title
+                  .content,
+              originalSourceUrl: `https://explore.openaire.eu/search/publication?articleId=${result.result.header["dri:objIdentifier"]}`
+            };
+          },
           STRUCTURE: {
-            id: `result.metadata["oaf:entity"]["oaf:result"].originalId`,
-            title: `result.metadata["oaf:entity"]["oaf:result"].title.content`
+            id: "id",
+            title: "title",
+            originalSourceUrl: "originalSourceUrl"
           }
         }
       },
@@ -173,19 +297,24 @@ const externalApiConfig = {
             "http://api.openaire.eu/search/publications?format=json&openairePublicationID=[ID]"
         },
         RESULT: {
-          PATH: "response.results.result.0.metadata.oaf:entity.oaf:result",
+          PATH: "response.results.result.0",
           TRANSFORM_FUNCTION: result => {
-            return result; // TODO
+            return {
+              id: result.metadata["oaf:entity"]["oaf:result"].originalId["$"],
+              title: result.metadata["oaf:entity"]["oaf:result"].title["$"],
+              originalSourceUrl: `https://explore.openaire.eu/search/publication?articleId=${result.header["dri:objIdentifier"]["$"]}`
+            };
           },
           STRUCTURE: {
-            id: `result.metadata["oaf:entity"]["oaf:result"].originalId`,
-            title: `title.$`
+            id: "id",
+            title: "title",
+            originalSourceUrl: "originalSourceUrl"
           }
         }
       }
     }
   },
- /* INVENIO: {
+  INVENIO: {
     PROJECT: {
       LOGO_URL:
         "https://invenio-software.org/static/img/logo-invenio-white.svg",
@@ -196,15 +325,39 @@ const externalApiConfig = {
         },
         RESULT: {
           PATH: "id",
-          STRUCTURE: { id: "id", title: "title" }
+          TRANSFORM_FUNCTION: result => {
+            return {
+              id: result.id,
+              title: result.title,
+              originalSourceUrl: result.doi_url
+            };
+          },
+          STRUCTURE: {
+            id: "id",
+            title: "title",
+            originalSourceUrl: "originalSourceUrl"
+          }
         }
       },
       GET_BY_ID: {
         QUERY: { URL: "https://zenodo.org/api/records/[ID]" },
-        RESULT: { STRUCTURE: { id: "id", title: "title" } }
+        RESULT: {
+          TRANSFORM_FUNCTION: result => {
+            return {
+              id: result.id,
+              title: result.title,
+              originalSourceUrl: result.doi_url
+            };
+          },
+          STRUCTURE: {
+            id: "id",
+            title: "title",
+            originalSourceUrl: "originalSourceUrl"
+          }
+        }
       }
     }
-  }*/
+  }
 };
 
 module.exports = { externalApiConfig };
