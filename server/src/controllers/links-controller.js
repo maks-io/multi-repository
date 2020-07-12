@@ -2,7 +2,6 @@ const { createIdentifier } = require("../services/create-identifier");
 const _ = require("lodash");
 const randomColor = require("randomcolor");
 const { getById } = require("./external-resource-controller");
-const { mapResults } = require("../services/map-results");
 const { processResults } = require("../services/process-results");
 const Link = require("../models/Link");
 const { externalApiConfig } = require("../external-apis");
