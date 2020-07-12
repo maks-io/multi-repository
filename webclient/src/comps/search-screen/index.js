@@ -464,10 +464,14 @@ class SearchScreen extends Component {
 
   getUpdatedResourcesStateWithNewLinkId = (identifiers, newLinkId) => {
     const clonedResourcesState = _.cloneDeep(this.state.resourcesState);
+    const identifierOfNewlyLinkedItem = identifiers[1];
     this.state.externalResources.forEach(er => {
       clonedResourcesState[er.platform][er.type].items.forEach(item => {
         if (identifiers.includes(item.identifier)) {
           item.isPartOf = [...item.isPartOf, newLinkId];
+        }
+        if (item.identifier === identifierOfNewlyLinkedItem) {
+          item.isSticky = true;
         }
       });
     });
@@ -479,9 +483,9 @@ class SearchScreen extends Component {
     const platform = snippets[0];
     const type = snippets[1];
     return {
-      ...this.state.resourcesState[platform][type].items.filter(
+      ...this.state.resourcesState[platform][type].items.find(
         r => r.identifier === identifier
-      )[0],
+      ),
       platform,
       type
     };
