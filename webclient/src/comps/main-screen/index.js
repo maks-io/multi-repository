@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Card, Input, message } from "antd";
+import { Card, Input, message } from "antd";
 import _ from "lodash";
 import axios from "axios";
 import LoadingMessage from "./comps/loading-message";
@@ -9,7 +9,7 @@ import { constants } from "../../constants";
 
 const LOADING_MESSAGE_KEY = "loadingMessage";
 
-class SearchScreen extends Component {
+class MainScreen extends Component {
   state = {
     mode: constants.mode.SEARCH, // one of 'SEARCH', 'FOCUS' and 'EDIT_LINKS'
     // searchTerm: "Default Search Term",
@@ -628,4 +628,4 @@ class SearchScreen extends Component {
   }
 }
 
-export default SearchScreen;
+export default MainScreen;
