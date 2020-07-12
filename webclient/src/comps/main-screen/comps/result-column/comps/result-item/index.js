@@ -11,15 +11,23 @@ class ResultItem extends Component {
   shouldComponentUpdate(nextProps, nextState, nextContext) {
     const {
       mode: modeNew,
+      focusInfo: focusInfoNew,
       linkTagStatus: linkTagStatusNew,
       isHighlighted: isHighlightedNew,
       hoverStyle: hoverStyleNew
     } = nextProps;
 
-    const { mode, linkTagStatus, isHighlighted, hoverStyle } = this.props;
+    const {
+      mode,
+      focusInfo,
+      linkTagStatus,
+      isHighlighted,
+      hoverStyle
+    } = this.props;
 
     if (
       JSON.stringify(modeNew) !== JSON.stringify(mode) ||
+      JSON.stringify(focusInfoNew) !== JSON.stringify(focusInfo) ||
       JSON.stringify(linkTagStatusNew) !== JSON.stringify(linkTagStatus) ||
       JSON.stringify(isHighlightedNew) !== JSON.stringify(isHighlighted) ||
       JSON.stringify(hoverStyleNew) !== JSON.stringify(hoverStyle)
