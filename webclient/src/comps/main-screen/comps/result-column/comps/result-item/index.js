@@ -7,10 +7,28 @@ import ResultItemTitleAndHeader from "./comps/result-item-title-and-header";
 import { constants } from "../../../../../../constants";
 import { colors } from "../../../../../../colors";
 
-const HOVER_DIRECT_COLOR = colors.BlueMunsell;
-const HOVER_INDIRECT_COLOR = colors.Silver;
-
 class ResultItem extends Component {
+  shouldComponentUpdate(nextProps, nextState, nextContext) {
+    const {
+      mode: modeNew,
+      linkTagStatus: linkTagStatusNew,
+      isHighlighted: isHighlightedNew,
+      hoverStyle: hoverStyleNew
+    } = nextProps;
+
+    const { mode, linkTagStatus, isHighlighted, hoverStyle } = this.props;
+
+    if (
+      JSON.stringify(modeNew) !== JSON.stringify(mode) ||
+      JSON.stringify(linkTagStatusNew) !== JSON.stringify(linkTagStatus) ||
+      JSON.stringify(isHighlightedNew) !== JSON.stringify(isHighlighted) ||
+      JSON.stringify(hoverStyleNew) !== JSON.stringify(hoverStyle)
+    ) {
+      return true;
+    }
+    return false;
+  }
+
   render() {
     const {
       resultStructure,
@@ -23,13 +41,15 @@ class ResultItem extends Component {
       identifier,
       handleLinkTagClick,
       handleHoverItem,
-      hoverInfo,
       handleClickItem,
       focusInfo,
       linkEditInfo,
       handleRemoveLinkConfirm,
       handleAddLinkConfirm,
-      mode
+      mode,
+      linkTagStatus,
+      isHighlighted,
+      hoverStyle
     } = this.props;
 
     if (mode === constants.mode.FOCUS) {
@@ -42,37 +62,6 @@ class ResultItem extends Component {
         return null;
       }
     }
-
-    let hoverStyle = {};
-    if (
-      Boolean(hoverInfo.identifier) &&
-      hoverInfo.identifier === data.identifier
-    ) {
-      hoverStyle.backgroundColor = HOVER_DIRECT_COLOR;
-      hoverStyle.color = "white";
-    } else if (hoverInfo.linkIds) {
-      if (data.isNew && hoverInfo.linkIds.includes(data.isPartOf[0])) {
-        hoverStyle.backgroundColor = HOVER_INDIRECT_COLOR;
-      } else if (data.isPartOf.some(r => hoverInfo.linkIds.includes(r))) {
-        hoverStyle.backgroundColor = HOVER_INDIRECT_COLOR;
-      }
-    }
-
-    const isHighlighted =
-      (mode === constants.mode.FOCUS &&
-        focusInfo.identifier === data.identifier) ||
-      (mode === constants.mode.EDIT_LINKS &&
-        linkEditInfo.identifier === data.identifier);
-
-    const linkEditModeActive = mode === constants.mode.EDIT_LINKS;
-    const linkTagStatus = !linkEditModeActive
-      ? "STANDARD"
-      : identifier === linkEditInfo.activeIdentifier
-      ? "ACTIVE"
-      : linkEditInfo.linkedItemsIdentifiers &&
-        linkEditInfo.linkedItemsIdentifiers.includes(identifier)
-      ? "LINKED_ITEM"
-      : "POTENTIAL_LINK";
 
     return (
       <Card
