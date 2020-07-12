@@ -382,6 +382,9 @@ class MainScreen extends Component {
       this.state.externalResources.forEach(er => {
         clonedResourcesState[er.platform][er.type].items.forEach(item => {
           item.isPartOf = item.isPartOf.filter(id => id !== linkId);
+          if (item.identifier === identifier) {
+            item.isSticky = false;
+          }
         });
       });
 
