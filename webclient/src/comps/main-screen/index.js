@@ -6,6 +6,7 @@ import LoadingMessage from "./comps/loading-message";
 import ResultColumn from "./comps/result-column";
 import { fetchLinks } from "./services/fetch-links";
 import { constants } from "../../constants";
+import { colors } from "../../colors";
 
 const LOADING_MESSAGE_KEY = "loadingMessage";
 
@@ -510,10 +511,12 @@ class MainScreen extends Component {
 
     return (
       <div
+        id={"main-screen"}
         style={{
           display: "flex",
           flexDirection: "column",
-          flex: 1
+          flex: 1,
+          backgroundColor: colors.Gainsboro
         }}
       >
         <Card
@@ -526,9 +529,15 @@ class MainScreen extends Component {
             borderRadius: "0.5rem",
             margin: "1.5rem",
             zIndex: 5,
-            width: 260
+            width: 260,
+            backgroundColor:
+              this.state.mode === constants.mode.FOCUS
+                ? colors.Focus
+                : this.state.mode === constants.mode.EDIT_LINKS
+                ? colors.EditLinks
+                : "white"
           }}
-          bodyStyle={{ height: "max-content", backgroundColor: "#E0E0E0" }}
+          bodyStyle={{ height: "max-content" }}
         >
           <div>Current View:</div>
           <h1 style={{ margin: 0 }}>{this.state.mode}</h1>
@@ -545,7 +554,8 @@ class MainScreen extends Component {
             fontWeight: "bold",
             letterSpacing: "0.45rem",
             opacity: 0.6,
-            marginTop: "2rem"
+            marginTop: "2rem",
+            color: colors.BlackCoral
           }}
         >
           MULTI REPOSITORY

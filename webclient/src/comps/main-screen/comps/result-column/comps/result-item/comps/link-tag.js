@@ -3,6 +3,7 @@ import { Popconfirm, Spin, Tag } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import { DeleteOutlined, NodeIndexOutlined } from "@ant-design/icons/lib/icons";
 import PlusOutlined from "@ant-design/icons/lib/icons/PlusOutlined";
+import { colors } from "../../../../../../../colors";
 
 const antIcon = (
   <LoadingOutlined
@@ -25,7 +26,6 @@ const Indicator = props => {
 
 const LinkTag = props => {
   const {
-    linkEditModeActive,
     fetchStep,
     nrOfLinks,
     handleLinkTagClick,
@@ -33,17 +33,9 @@ const LinkTag = props => {
     linkEditInfo,
     isPartOf,
     handleRemoveLinkConfirm,
-    handleAddLinkConfirm
+    handleAddLinkConfirm,
+    linkTagStatus
   } = props;
-
-  const linkTagStatus = !linkEditModeActive
-    ? "STANDARD"
-    : identifier === linkEditInfo.activeIdentifier
-    ? "ACTIVE"
-    : linkEditInfo.linkedItemsIdentifiers &&
-      linkEditInfo.linkedItemsIdentifiers.includes(identifier)
-    ? "LINKED_ITEM"
-    : "POTENTIAL_LINK";
 
   if (linkTagStatus === "STANDARD") {
     const opacity =
@@ -84,8 +76,8 @@ const LinkTag = props => {
         style={{
           fontWeight: "bold",
           cursor: "pointer",
-          color: "blue",
-          backgroundColor: "lightblue"
+          color: colors.EditLinksDark,
+          backgroundColor: colors.EditLinks
         }}
         title={`You are currently editing links for this item. Click to exit this linking mode.`}
         onClick={e => {
@@ -122,8 +114,8 @@ const LinkTag = props => {
           style={{
             fontWeight: "bold",
             cursor: "pointer",
-            color: "red",
-            backgroundColor: "coral"
+            color: colors.RemoveLinkDark,
+            backgroundColor: colors.RemoveLink
           }}
           title={"Click to remove link..."}
           onClick={e => {
@@ -150,8 +142,8 @@ const LinkTag = props => {
           style={{
             fontWeight: "bold",
             cursor: "pointer",
-            color: "green",
-            backgroundColor: "lightgreen"
+            color: colors.AddLinkDark,
+            backgroundColor: colors.AddLink
           }}
           title={"Click to add link..."}
           onClick={e => {

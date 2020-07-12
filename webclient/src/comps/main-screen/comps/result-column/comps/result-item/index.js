@@ -5,9 +5,10 @@ import SourceTag from "./comps/source-tag";
 import OriginalSourceTag from "./comps/original-source-tag";
 import ResultItemTitleAndHeader from "./comps/result-item-title-and-header";
 import { constants } from "../../../../../../constants";
+import { colors } from "../../../../../../colors";
 
-const HOVER_DIRECT_COLOR = "#9DB4C0";
-const HOVER_INDIRECT_COLOR = "#C2DFE3";
+const HOVER_DIRECT_COLOR = colors.BlueMunsell;
+const HOVER_INDIRECT_COLOR = colors.Silver;
 
 class ResultItem extends Component {
   render() {
@@ -48,6 +49,7 @@ class ResultItem extends Component {
       hoverInfo.identifier === data.identifier
     ) {
       hoverStyle.backgroundColor = HOVER_DIRECT_COLOR;
+      hoverStyle.color = "white";
     } else if (hoverInfo.linkIds) {
       if (data.isNew && hoverInfo.linkIds.includes(data.isPartOf[0])) {
         hoverStyle.backgroundColor = HOVER_INDIRECT_COLOR;
@@ -57,8 +59,20 @@ class ResultItem extends Component {
     }
 
     const isHighlighted =
-      (mode === constants.mode.FOCUS && focusInfo.identifier === data.identifier) ||
-      (mode === constants.mode.EDIT_LINKS && linkEditInfo.identifier === data.identifier);
+      (mode === constants.mode.FOCUS &&
+        focusInfo.identifier === data.identifier) ||
+      (mode === constants.mode.EDIT_LINKS &&
+        linkEditInfo.identifier === data.identifier);
+
+    const linkEditModeActive = mode === constants.mode.EDIT_LINKS;
+    const linkTagStatus = !linkEditModeActive
+      ? "STANDARD"
+      : identifier === linkEditInfo.activeIdentifier
+      ? "ACTIVE"
+      : linkEditInfo.linkedItemsIdentifiers &&
+        linkEditInfo.linkedItemsIdentifiers.includes(identifier)
+      ? "LINKED_ITEM"
+      : "POTENTIAL_LINK";
 
     return (
       <Card
@@ -68,7 +82,11 @@ class ResultItem extends Component {
           margin: "0.3rem",
           cursor: "pointer",
           borderWidth: 7,
-          borderColor: isHighlighted ? "green" : "transparent",
+          borderColor: isHighlighted
+            ? colors.Focus
+            : linkTagStatus === "ACTIVE"
+            ? colors.EditLinks
+            : "transparent",
           ...hoverStyle
         }}
         bodyStyle={{ padding: "0.3rem" }}
@@ -122,7 +140,6 @@ class ResultItem extends Component {
               }}
             >
               <LinkTag
-                linkEditModeActive={mode === constants.mode.EDIT_LINKS}
                 fetchStep={fetchStep}
                 nrOfLinks={data.isPartOf ? data.isPartOf.length : 0}
                 platform={platform}
@@ -133,6 +150,7 @@ class ResultItem extends Component {
                 isPartOf={data.isPartOf}
                 handleRemoveLinkConfirm={handleRemoveLinkConfirm}
                 handleAddLinkConfirm={handleAddLinkConfirm}
+                linkTagStatus={linkTagStatus}
               />
               <SourceTag fetchStep={fetchStep} data={data} />
               <OriginalSourceTag platform={platform} type={type} data={data} />
