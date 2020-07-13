@@ -43,13 +43,12 @@ After all links are resolved, the result is being displayed in the UI - and the 
 
 ### Linking
 
-For now, the linking of objects (users, papers, etc.) is not possible via the UI. This application is supposed to be a proof of concept and I considered the UI linking to be of lower priority.
+Links can be created when the app is in `EDIT_LINKS` mode. To get there, first search for certain terms and then click on the link tag of one of the resulting items, in its lower left corner.
+The app will then allow to add new or remove existing links to other items.
+The user can search for new search terms while being in this mode.
 
-For testing and demonstration purposes I created links manually, via the helper files `server/src/data/links.json` and `server/src/data/load-sample-data.js`.
+For testing and demonstration purposes I also created some links manually, via the helper files `server/src/data/links.json` and `server/src/data/load-sample-data.js`.
 More information on how to use them in the section [Usage](#usage).
-
-Of course, a final production ready app would probably include such a mechanism.
-That is why I added it in the [Improvements](#improvements) list.
 
 ## Usage
 
@@ -64,8 +63,9 @@ The following steps are necessary to use this application:
 DB_NAME={YOUR_DATABASE_URL_MENTIONED_ABOVE}
 DB_USERNAME={YOUR_DATABASE_USER_NAME_MENTIONED_ABOVE}
 DB_PASSWORD={YOUR_DATABASE_PASSWORD_MENTIONED_ABOVE}
-GITLAB_TOKEN={YOUR_GITLAB_API_ACCESS_TOKEN}
-INVENIO_TOKEN={YOUR_INVENIO_API_ACCESS_TOKEN}
+GITLAB_USER_TOKEN={YOUR_GITLAB_API_ACCESS_TOKEN} // optional, see below
+GITLAB_REPO_TOKEN={YOUR_GITLAB_API_ACCESS_TOKEN} // optional, see below
+...
 ```
 
 3. Now the necessary dependencies need to be installed.
@@ -84,9 +84,79 @@ INVENIO_TOKEN={YOUR_INVENIO_API_ACCESS_TOKEN}
 5. You are now ready to use the app(s).
    Type any search term into the input field and wait for results.
 
-6. If you want to change existing links or add new ones you can do so by modifying `server/src/data/links.json` accordingly.
+6. If you want to change existing links or add new ones manually you can do so by modifying `server/src/data/links.json` accordingly.
    Afterwards you need to `cd` into `server/` and run `yarn resample`.
    All existing links in the database will be deleted and be replaced by those defined in the json file.
+
+   However, since the newest version it is also possible to create links directly with the user interface.
+
+## Modifying the set of available resources
+
+The last changes made the code base way more generic and now allows to easily add new or remove existing external apis/resources.
+
+To do so, modify the `externalApiConfig` object (contained in the file `server/src/external-apis.js`) accordingly.
+
+The following describes the structure of the configuration:
+
+```
+const externalApiConfig = {
+  [PLATFORM_1]: {
+    [TYPE_1]: {
+      LOGO_URL: "",
+      FALLBACK_AVATAR: "",
+      SEARCH_BY_TERM: {
+        QUERY: {
+          URL: ""
+        },
+        RESULT: {
+          PATH: "",
+          TRANSFORM_FUNCTION: result => ({ ... }),
+          STRUCTURE: {
+            id: "",
+            title: "",
+            avatar: "",
+            originalSourceUrl: ""
+          }
+        }
+      },
+      GET_BY_ID: {
+        QUERY: {
+          URL: ""
+        },
+        RESULT: {
+          PATH: "",
+          TRANSFORM_FUNCTION: result => ({ ... }),
+          STRUCTURE: {
+            id: "",
+            title: "",
+            avatar: "",
+            originalSourceUrl: ""
+          }
+        }
+      }
+    },
+    [TYPE_2]: {
+      ...
+    }
+  },
+  [PLATFORM_2]: {
+    ...
+  }
+}
+```
+
+| name                                           | description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | required                           | example                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PLATFORM                                       | A resource is always described by two levels. `PLATFORM` is the first one - and you can name it whatever you want, just make sure it's unique.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | yes                                | `GITHUB`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| TYPE                                           | This is the second level for defining a resource. You can also name it whatever you want - but make sure it's unique within the `PLATFORM`.<br />The number of `TYPE`s eventually makes up your total number of resources.<br />Imagine having one `PLATFORM` called `GITHUB` and two `TYPES` called `USERS` and `REPOS` -> you end up with two resources.                                                                                                                                                                                                                                                                                                                                                   | yes                                | `USER`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| LOGO_URL                                       | This is the path to a logo for the given `PLATFORM`-`TYPE` combination. This prop must be inside the `TYPE` object.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | no                                 | `some-url-to-a-image.png`                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| FALLBACK_AVATAR                                | In case you decide that your resource should display some kind of avatar (with the `avatar` prop described below), this will allow to set a fallback icon that will be displayed in case some items don't provide any avatar.<br />The `FALLBACK_AVATAR` needs to be a valid icon value from the [ant design icon set](https://ant.design/components/icon/).                                                                                                                                                                                                                                                                                                                                                 | no                                 | `UserOutlined`                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| SEARCH_BY_TERM<br/><br/>and<br/><br/>GET_BY_ID | Every resource you define needs to provide two API endpoints: one for searching items via text search, and one for directly accessing single items via some kind of id.<br/>`SEARCH_BY_TERM` is responsible for the text search, `GET_BY_ID` for the single retrieval - and they both share the following sub props.                                                                                                                                                                                                                                                                                                                                                                                         | yes                                | -                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| QUERY                                          | The first sub prop of `SEARCH_BY_TERM` and `GET_BY_ID` describes the API endpoint, that will be used. For now, it only needs exactly one sub prop called `URL`, which defines this endpoint's location.<br/>In case of `SEARCH_BY_TERM` you need to embed the string `[SEARCH_TERM]` within the URL accordingly - this will automatically be replaced on-the-fly by the Multi Repository.<br />The same goes for the counterpart `GET_BY_ID`, where you must embed the string `[ID]`.<br/>In case you need to use certain access tokens within the URL, you can also embed `[TOKEN]`, which will automatically be replaced by `[PLATFORM]_[TYPE]_[TOKEN]`, if you provide it accordingly in the `.env` file. | yes                                | `https://my-api.com/search` <br/>`?token=[TOKEN]`<br/>`&searchterm=[SEARCH_TERM]`<br/><br/>or<br/><br/>`https://my-api.com/get-by-id` <br/>`?token=[TOKEN]`<br/>`&id=[ID]`                                                                                                                                                                                                                                                                                                                |
+| RESULT                                         | The counterpart to `QUERY` defines how the result(s) will be processed. It needs the following sub props.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | yes                                | -                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| PATH                                           | In case the API endpoint has your result(s) nested deeper (not directly in the root), you can define its location here (use dot notation for defining the path).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | no                                 | `fruits.apples` in case the endpoint returns an object like this:<br />`{ fruits: { apples: [ YOUR_DESIRED_RESULT(S) ] } }`                                                                                                                                                                                                                                                                                                                                                               |
+| TRANSFORM_FUNCTION                             | In case you want to transform the retrieved result(s) in any way, you can define a function to do so. Please note that it does not matter if you are defining this for `SEARCH_BY_TERM` or `GET_BY_ID` - in both cases this function accepts always 1 (!) result, and returns 1 transformed result. In case of multiple results the Multi Repository maps it.<br/>Make sure, that - IF you are using this function - you end up with at least the following properties: `id`, `title` and `originalSourceUrl`. You can name them differently if you like, since the final mapping will happen in the next step (see `STRUCTURE`), but make sure you provide those from a semantic point of view.             | no                                 | `(result) => ({ id: result.id, title: result.name.toLowerCase(), originalSourceUrl: result.webUrl })`                                                                                                                                                                                                                                                                                                                                                                                     |
+| STRUCTURE                                      | The final property defines how results will finally look like. It is important that each resulting item has at least `id`, `title` and `originalSourceUrl` defined - their values describe the path to those properties from the preceding state (which can be the direct retrieval from the API endpoint's result OR after the transformation via a `TRANSFORM_FUNCTION`). Optionally you can also provide a prop `avatar` if you want to display pictures. If certain items lack this prop you can still define `FALLBACK_AVATAR` (described above) to catch those cases.                                                                                                                                  | yes (except for sub prop `avatar`) | In the most basic case (if the result is already properly formatted before this step), it could look like this:<br/> `{ id: "id", title: "name", avatar: "avatar", originalSourceUrl: "originalSourceUrl" }`<br/><br/>Another example would be, if the calling of an endpoint returns `{ identifier: '123', name: 'my-doc', urls: { main: 'qwer' } }`<br/>In that case you would define your `STRUCTURE` like this: `{ id: 'identifier', title: 'name', originalSourceUrl: 'urls.main' }` |
 
 ## Known bugs
 
@@ -105,16 +175,13 @@ INVENIO_TOKEN={YOUR_INVENIO_API_ACCESS_TOKEN}
 
 The following is a mixture of important improvements and nice-to-have features.
 
-- **Linking via UI** - as mentioned above, the current prototype does not allow the user to link items via the user interface.
 - **1:1 linking for users/people** - it is currently possible to link one github user to multiple tiss people.
   We could therefore link the github user of `Bernhard Gößwein` to his tiss entry, but also to the tiss entry of some completely different person, at the same time.
   This is just an example, this also goes for other platforms.
 - **List users as one unit** - since some result columns represent people, it could be nice to display linked people of different platforms as one unique card.
   Example: take `Bernhard Gößwein` again - we could display his tiss entry, his GitLab user as well as his GitHub user inside one single card, for instance.
 - The **property `identifier`**, that is being used across both applications, should be assigned/created as soon as possible - meaning after results come back from the external apis, in search step 1.
-- There is some **code redundancy** in server and webclient.
-Appropriate tools (like [lerna](https://github.com/lerna/lerna)) would allow us to use code sharing mechanisms.
 - Maybe **hide the source tags** - they currently show if an object was found in step 1 or in step 2 of the search.
-This is helpful during development - but maybe not needed for end users.
+  This is helpful during development - but maybe not needed for end users.
 - **Transitive relation logic** - currently the server only considers the search results of step 1, when looking for corresponding links.
-Any object, that gets added during step 2 (individual fetching because not included in results of step 1) does not have its links checked, for now.
+  Any object, that gets added during step 2 (individual fetching because not included in results of step 1) does not have its links checked, for now.
