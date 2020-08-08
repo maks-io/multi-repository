@@ -3,7 +3,7 @@ import { Icon } from "antd";
 import ResultItem from "./comps/result-item";
 import ResultColumnHeader from "./comps/result-column-header";
 import { constants } from "../../../../constants";
-import {colors} from "../../../../colors";
+import { colors } from "../../../../colors";
 
 const HOVER_DIRECT_COLOR = colors.BlueMunsell;
 const HOVER_INDIRECT_COLOR = colors.Silver;
@@ -40,7 +40,11 @@ class ResultColumn extends Component {
             width: columnWidth
           }}
         >
-          <ResultColumnHeader logoUrl={logoUrl} type={type} />
+          <ResultColumnHeader
+            logoUrl={logoUrl}
+            platform={platform}
+            type={type}
+          />
           <div
             style={{
               display: "flex",
@@ -105,7 +109,9 @@ class ResultColumn extends Component {
                       : i.identifier === linkEditInfo.activeIdentifier
                       ? "ACTIVE"
                       : linkEditInfo.linkedItemsIdentifiers &&
-                        linkEditInfo.linkedItemsIdentifiers.includes(i.identifier)
+                        linkEditInfo.linkedItemsIdentifiers.includes(
+                          i.identifier
+                        )
                       ? "LINKED_ITEM"
                       : "POTENTIAL_LINK";
                     return (

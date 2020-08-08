@@ -1,6 +1,6 @@
 import React from "react";
 
-const ResultColumnHeader = ({ logoUrl, type }) => {
+const ResultColumnHeader = ({ logoUrl, platform, type }) => {
   return (
     <div
       style={{
@@ -10,7 +10,7 @@ const ResultColumnHeader = ({ logoUrl, type }) => {
         marginBottom: "1rem"
       }}
     >
-      <ResultColumnLogo logoUrl={logoUrl} />
+      <ResultColumnLogo platform={platform} logoUrl={logoUrl} />
       <ResultColumnTitle type={type} />
     </div>
   );
@@ -24,7 +24,7 @@ const ResultColumnTitle = ({ type }) => {
   ) : null;
 };
 
-const ResultColumnLogo = ({ logoUrl }) => {
+const ResultColumnLogo = ({ platform, logoUrl }) => {
   return (
     <div
       style={{
@@ -39,7 +39,7 @@ const ResultColumnLogo = ({ logoUrl }) => {
       <img
         src={logoUrl}
         style={{ maxWidth: "100%", maxHeight: "4rem" }}
-        alt="platformLogo"
+        alt={`logoForPlatform${platform}`}
       />
     </div>
   );

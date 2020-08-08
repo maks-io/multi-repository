@@ -83,6 +83,10 @@ class ResultItem extends Component {
             ? colors.Focus
             : linkTagStatus === "ACTIVE"
             ? colors.EditLinks
+            : linkTagStatus === "POTENTIAL_LINK"
+            ? colors.AddLink
+            : linkTagStatus === "LINKED_ITEM"
+            ? colors.RemoveLink
             : "transparent",
           ...hoverStyle
         }}
