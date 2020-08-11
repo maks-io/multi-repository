@@ -20,7 +20,7 @@ INSERT DATA
 const prefixKeyDefault = "rdf";
 const prefixValueDefault = "<http://www.w3.org/1999/02/22-rdf-syntax-ns#>";
 
-const createQuery = (
+const createWriteQuery = (
   prefixKey = prefixKeyDefault,
   prefixValue = prefixValueDefault,
   subject,
@@ -46,9 +46,9 @@ const createQuery = (
          `;
 };
 
-const createPayload = query => {
+const createWritePayload = writeQuery => {
   return new UpdateQueryPayload()
-    .setQuery(query)
+    .setQuery(writeQuery)
     .setContentType(QueryContentType.SPARQL_UPDATE)
     .setInference(true)
     .setTimeout(5);
@@ -56,15 +56,14 @@ const createPayload = query => {
 
 const writeToDB = async (subject, predicate, obj) => {
   const repository = await getGraphDBRDFRepositoryClient();
-  const query = createQuery(undefined, undefined, subject, predicate, obj);
-
-  const payload = createPayload(query);
+  const query = createWriteQuery(undefined, undefined, subject, predicate, obj);
+  const payload = createWritePayload(query);
 
   try {
     const result = await repository.update(payload);
     console.log("Writing to GraphDB - SUCCESS");
   } catch (error) {
-    console.error("Writing to GraphDB - ERROR:");
+    console.error("Writing to GraphDB - ERROR");
     // console.error("Writing to GraphDB - ERROR:", error);
   }
 };

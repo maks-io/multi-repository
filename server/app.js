@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 const routes = require("./src/routes");
+const { readFromDB } = require("./src/graphdb/graphdb-read");
 const {
   initGraphDBServerClient,
   GraphDB
@@ -29,7 +30,14 @@ const graphDbTest = async () => {
   // console.log("ids", ids);
 
   console.log("try write....");
-  await writeToDB("subj1","pred1","o1");
+  await writeToDB("subj1", "pred1", "o1");
+  await writeToDB("subj1", "pred2", "o2");
+  await writeToDB("subj2", "pred3", "o3");
+  await writeToDB("subj5", "pred3", "o3");
+  console.log("done");
+
+  console.log("try read....");
+  await readFromDB("subj1", "pred1", "o1");
   console.log("done");
 };
 

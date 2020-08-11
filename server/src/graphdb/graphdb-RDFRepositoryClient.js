@@ -1,39 +1,20 @@
 const { GraphDB } = require("./graphdb-server-client");
+
+let rdfRepositoryClient;
+
 const getGraphDBRDFRepositoryClient = async () => {
-  /*
-  const { RepositoryClientConfig, RDFRepositoryClient } = graphdb.repository;
-  const { RDFMimeType } = graphdb.http;
 
-  const { GRAPHDB_BASE_URL, GRAPHDB_REPOSITORY_NAME } = process.env;
-
-  const endpoint = `${GRAPHDB_BASE_URL}repositories/${GRAPHDB_REPOSITORY_NAME}`;
-  // const endpoint = 'http://192.168.178.37:7200/repositories/multi-repository-db'
-
-  const readTimeout = 30000;
-  const writeTimeout = 30000;
-  const config = new RepositoryClientConfig(
-    [endpoint],
-    {
-      Accept: RDFMimeType.TURTLE
-    },
-    "",
-    readTimeout,
-    writeTimeout
-  );
-  const repository = new RDFRepositoryClient(config);*/
+  if (rdfRepositoryClient) {
+    return rdfRepositoryClient;
+  }
 
   const { GRAPHDB_BASE_URL, GRAPHDB_REPOSITORY_NAME } = process.env;
 
   const endpoint = `${GRAPHDB_BASE_URL}repositories/${GRAPHDB_REPOSITORY_NAME}`;
 
   const graphdb = require("graphdb");
-  // const { ServerClient, ServerClientConfig } = graphdb.server;
-  // const { RepositoryClientConfig } = graphdb.repository;
 
-  // const config = new ServerClientConfig("http://localhost:7200", 0, {});
-  // const server = new ServerClient(config);
-  const { RepositoryClientConfig, RDFRepositoryClient } = graphdb.repository;
-  const { RDFMimeType } = graphdb.http;
+  const { RepositoryClientConfig } = graphdb.repository;
 
   const server = GraphDB();
 
@@ -47,7 +28,7 @@ const getGraphDBRDFRepositoryClient = async () => {
     writeTimeout
   );
 
-  const rdfRepositoryClient = await server.getRepository(
+  rdfRepositoryClient = await server.getRepository(
     GRAPHDB_REPOSITORY_NAME,
     repositoryClientConfig
   );
