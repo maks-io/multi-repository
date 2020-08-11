@@ -5,26 +5,60 @@ const {
 const { UpdateQueryPayload } = require("graphdb").query;
 const { QueryContentType } = require("graphdb").http;
 
+/*
 // useful link:
 // https://docs.marklogic.com/guide/semantics/sparql-update
 const q = `
-PREFIX dc: <http://marklogic.com/dc/elements/1.1/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 INSERT DATA
 {
-  <http://example/book0> dc:title "A default book"
+  rdf:aha rdf:title rdf:hi2
 }
 `;
+*/
 
-const payload = new UpdateQueryPayload()
-  .setQuery(q)
-  .setContentType(QueryContentType.SPARQL_UPDATE)
-  .setInference(true)
-  .setTimeout(5);
+const prefixKeyDefault = "rdf";
+const prefixValueDefault = "<http://www.w3.org/1999/02/22-rdf-syntax-ns#>";
 
-const writeToDB = async () => {
+const createQuery = (
+  prefixKey = prefixKeyDefault,
+  prefixValue = prefixValueDefault,
+  subject,
+  predicate,
+  obj
+) => {
+  if (!subject) {
+    throw new Error("Subject of query is undefined");
+  }
+  if (!predicate) {
+    throw new Error("Predicate of query is undefined");
+  }
+  if (!obj) {
+    throw new Error("Object of query is undefined");
+  }
+
+  return `
+            PREFIX ${prefixKey}: ${prefixValue}
+            INSERT DATA
+            {
+              ${prefixKey}:${subject} ${prefixKey}:${predicate} ${prefixKey}:${obj}
+            }
+         `;
+};
+
+const createPayload = query => {
+  return new UpdateQueryPayload()
+    .setQuery(query)
+    .setContentType(QueryContentType.SPARQL_UPDATE)
+    .setInference(true)
+    .setTimeout(5);
+};
+
+const writeToDB = async (subject, predicate, obj) => {
   const repository = await getGraphDBRDFRepositoryClient();
+  const query = createQuery(undefined, undefined, subject, predicate, obj);
 
-  console.log("REPO", repository);
+  const payload = createPayload(query);
 
   try {
     const result = await repository.update(payload);

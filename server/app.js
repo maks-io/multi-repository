@@ -29,7 +29,7 @@ const graphDbTest = async () => {
   // console.log("ids", ids);
 
   console.log("try write....");
-  await writeToDB();
+  await writeToDB("subj1","pred1","o1");
   console.log("done");
 };
 
