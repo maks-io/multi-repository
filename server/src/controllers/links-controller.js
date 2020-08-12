@@ -15,6 +15,8 @@ exports.fetchLinks = async (req, res) => {
     const links = await Link.find({});
     const newResources = await applyLinkLogic(apiData, links);
 
+    console.log("the links are:",JSON.stringify(links,null,2))
+
     console.log("\n/////", "Search Step 2 - Link Logic - DONE", "/////\n");
 
     return res.json(newResources);

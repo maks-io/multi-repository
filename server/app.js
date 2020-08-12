@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 const routes = require("./src/routes");
+const {getAllLinks} = require("./src/graphdb/links");
 const { readFromDB } = require("./src/graphdb/graphdb-read");
 const {
   initGraphDBServerClient,
@@ -37,7 +38,9 @@ const graphDbTest = async () => {
   console.log("done");
 
   console.log("try read....");
-  await readFromDB("subj1", "pred1", "o1");
+  // await readFromDB("subj1", "pred1", "o1");
+  const allLinks = await getAllLinks()
+  // console.log("all links are",allLinks)
   console.log("done");
 };
 

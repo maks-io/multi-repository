@@ -18,7 +18,7 @@ INSERT DATA
 */
 
 const prefixKeyDefault = "rdf";
-const prefixValueDefault = "<http://www.w3.org/1999/02/22-rdf-syntax-ns#>";
+const prefixValueDefault = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
 const createWriteQuery = (
   prefixKey = prefixKeyDefault,
@@ -38,7 +38,7 @@ const createWriteQuery = (
   }
 
   return `
-            PREFIX ${prefixKey}: ${prefixValue}
+            PREFIX ${prefixKey}: <${prefixValue}>
             INSERT DATA
             {
               ${prefixKey}:${subject} ${prefixKey}:${predicate} ${prefixKey}:${obj}
