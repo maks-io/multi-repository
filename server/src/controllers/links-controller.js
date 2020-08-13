@@ -38,8 +38,6 @@ const applyLinkLogic = async (individualResults, links) => {
   );
 
   links.forEach(link => {
-    const linkColor = randomColor(); // TODO temporarily using random color as link identifier
-
     const linkNodeOnePlatform = link.nodes[0].platform;
     const linkNodeOneType = link.nodes[0].type;
     const linkNodeOneId = link.nodes[0].id;
@@ -47,7 +45,19 @@ const applyLinkLogic = async (individualResults, links) => {
     const linkNodeTwoType = link.nodes[1].type;
     const linkNodeTwoId = link.nodes[1].id;
 
-    const linkString = `${linkNodeOnePlatform}_${linkNodeOneType}_${linkNodeOneId} <---> ${linkNodeTwoPlatform}_${linkNodeTwoType}_${linkNodeTwoId}`;
+    const linkNodeOneIdentifier = createIdentifier(
+      linkNodeOnePlatform,
+      linkNodeOneType,
+      linkNodeOneId
+    );
+    const linkNodeTwoIdentifier = createIdentifier(
+      linkNodeTwoPlatform,
+      linkNodeTwoType,
+      linkNodeTwoId
+    );
+    const linkColor = linkNodeOneIdentifier + ":::::" + linkNodeTwoIdentifier; // TODO temporarily using random color as link identifier
+
+    const linkString = `${linkNodeOneIdentifier} <---> ${linkNodeTwoIdentifier}`;
     console.log("[LINK]", linkString);
 
     const platformOne = individualResultsCopy[linkNodeOnePlatform];
@@ -62,9 +72,7 @@ const applyLinkLogic = async (individualResults, links) => {
     const scopeOne = platformOne[linkNodeOneType];
     if (scopeOne) {
       const idArray = scopeOne.filter(
-        i =>
-          i.identifier ===
-          createIdentifier(linkNodeOnePlatform, linkNodeOneType, linkNodeOneId)
+        i => i.identifier === linkNodeOneIdentifier
       );
       if (idArray.length > 0) {
         nodeOne = idArray[0];
@@ -75,9 +83,7 @@ const applyLinkLogic = async (individualResults, links) => {
     const scopeTwo = platformTwo[linkNodeTwoType];
     if (scopeTwo) {
       const idArray = scopeTwo.filter(
-        i =>
-          i.identifier ===
-          createIdentifier(linkNodeTwoPlatform, linkNodeTwoType, linkNodeTwoId)
+        i => i.identifier === linkNodeTwoIdentifier
       );
       if (idArray.length > 0) {
         nodeTwo = idArray[0];
@@ -88,8 +94,21 @@ const applyLinkLogic = async (individualResults, links) => {
       console.log("both nodes already available from step 1", nodeOne, nodeTwo);
       nodeOne.isPartOf.push(linkColor);
       nodeOne.isNew = true;
+
+      // if (!nodeOne.linksTo) {
+      //   nodeOne.linksTo = [linkNodeTwoIdentifier];
+      // } else {
+      //   nodeOne.linksTo.push(linkNodeTwoIdentifier);
+      // }
+
       nodeTwo.isPartOf.push(linkColor);
       nodeTwo.isNew = true;
+
+      // if (!nodeTwo.linksFrom) {
+      //   nodeTwo.linksFrom = [linkNodeOneIdentifier];
+      // } else {
+      //   nodeTwo.linksFrom.push(linkNodeOneIdentifier);
+      // }
     } else if (nodeOne) {
       console.log(
         "left node already available from step 1 -> fetch right node"
@@ -133,7 +152,9 @@ const applyLinkLogic = async (individualResults, links) => {
     );
   });
 
-  return makeResultsDistinct(individualResultsCopy);
+  const distinctResults = makeResultsDistinct(individualResultsCopy);
+
+  return distinctResults;
 };
 
 const makeResultsDistinct = results => {

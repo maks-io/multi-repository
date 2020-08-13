@@ -10,6 +10,7 @@
     "lodash": "^4.17.19",
     "moment": "^2.24.0",
     "react": "^16.9.0",
+    "react-archer": "^2.0.2",
     "react-dom": "^16.9.0",
     "react-scripts": "3.1.1"
   },

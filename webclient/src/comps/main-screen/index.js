@@ -7,6 +7,7 @@ import ResultColumn from "./comps/result-column";
 import { fetchLinks } from "./services/fetch-links";
 import { constants } from "../../constants";
 import { colors } from "../../colors";
+import { ArcherContainer } from "react-archer";
 
 const LOADING_MESSAGE_KEY = "loadingMessage";
 
@@ -14,7 +15,7 @@ class MainScreen extends Component {
   state = {
     mode: constants.mode.SEARCH, // one of 'SEARCH', 'FOCUS' and 'EDIT_LINKS'
     // searchTerm: "Default Search Term",
-    searchTerm: "",
+    searchTerm: "Bernhard Gößwein",
     resultSearchTerm: "",
     isLoading: false,
     loadingStep: -1, // -1 ... not loading at all, 0 ... first step (initial searchBothSteps in individual sources), 1 ... second step (linking)
@@ -191,6 +192,8 @@ class MainScreen extends Component {
   };
 
   searchStep0 = async () => {
+    this.setState({ loadingStep: 0 });
+
     const { searchTerm } = this.state;
     console.log(
       `\tSearch step 0 (with searchTerm '${searchTerm}')...`,
@@ -512,6 +515,15 @@ class MainScreen extends Component {
     const resourcesFlat = this.getResourcesFlat();
     const numberOfResources = externalResources.length;
 
+    //
+    // const Wrapper = ({ children }) => {
+    //   return isLoading ? (
+    //     <React.Fragment>{children}</React.Fragment>
+    //   ) : (
+    //     <ArcherContainer>{children}</ArcherContainer>
+    //   );
+    // };
+
     return (
       <div
         id={"main-screen"}
@@ -611,30 +623,39 @@ class MainScreen extends Component {
             marginTop: 0
           }}
         >
-          <div style={{ display: "flex", flexDirection: "row" }}>
-            {resourcesFlat.map(resource => (
-              <ResultColumn
-                key={`${resource.platform}_${resource.type}`}
-                platform={resource.platform}
-                type={resource.type}
-                logoUrl={resource.logoUrl}
-                fallbackAvatar={resource.fallbackAvatar}
-                items={resource.items}
-                isLoading={resource.isLoading}
-                mode={mode}
-                fetchStep={fetchStep}
-                handleHoverItem={this.handleHoverItem}
-                hoverInfo={this.state.hoverInfo}
-                handleClickItem={this.handleClickItem}
-                focusInfo={this.state.focusInfo}
-                linkEditInfo={this.state.linkEditInfo}
-                columnWidth={`${90 / numberOfResources}vw`}
-                handleLinkTagClick={this.handleLinkTagClick}
-                handleRemoveLinkConfirm={this.handleRemoveLinkConfirm}
-                handleAddLinkConfirm={this.handleAddLinkConfirm}
-              />
-            ))}
-          </div>
+          <ArcherContainer strokeColor={"red"}>
+            <div
+              style={{
+                position: "relative",
+                display: "flex",
+                flexDirection: "row"
+              }}
+            >
+              {resourcesFlat.map(resource => (
+                <ResultColumn
+                  key={`${resource.platform}_${resource.type}`}
+                  platform={resource.platform}
+                  type={resource.type}
+                  loadingStep={fetchStep}
+                  logoUrl={resource.logoUrl}
+                  fallbackAvatar={resource.fallbackAvatar}
+                  items={resource.items}
+                  isLoading={resource.isLoading}
+                  mode={mode}
+                  fetchStep={fetchStep}
+                  handleHoverItem={this.handleHoverItem}
+                  hoverInfo={this.state.hoverInfo}
+                  handleClickItem={this.handleClickItem}
+                  focusInfo={this.state.focusInfo}
+                  linkEditInfo={this.state.linkEditInfo}
+                  columnWidth={`${90 / numberOfResources}vw`}
+                  handleLinkTagClick={this.handleLinkTagClick}
+                  handleRemoveLinkConfirm={this.handleRemoveLinkConfirm}
+                  handleAddLinkConfirm={this.handleAddLinkConfirm}
+                />
+              ))}
+            </div>
+          </ArcherContainer>
         </div>
       </div>
     );

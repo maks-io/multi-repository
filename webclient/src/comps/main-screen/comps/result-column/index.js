@@ -10,7 +10,7 @@ const HOVER_INDIRECT_COLOR = colors.Silver;
 
 class ResultColumn extends Component {
   render() {
-    const {
+    const {loadingStep,
       platform,
       type,
       logoUrl,
@@ -116,6 +116,7 @@ class ResultColumn extends Component {
                       : "POTENTIAL_LINK";
                     return (
                       <ResultItem
+                          loadingStep={loadingStep}
                         key={i.identifier}
                         data={i}
                         index={index}
