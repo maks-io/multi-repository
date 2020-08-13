@@ -4,6 +4,7 @@ const randomColor = require("randomcolor");
 const { getById } = require("./external-resource-controller");
 const { processResults } = require("../services/process-results");
 const Link = require("../models/Link");
+const { createLink } = require("../graphdb/links");
 const { externalApiConfig } = require("../external-apis");
 
 exports.fetchLinks = async (req, res) => {
@@ -15,7 +16,7 @@ exports.fetchLinks = async (req, res) => {
     const links = await Link.find({});
     const newResources = await applyLinkLogic(apiData, links);
 
-    console.log("the links are:",JSON.stringify(links,null,2))
+    console.log("the links are:", JSON.stringify(links, null, 2));
 
     console.log("\n/////", "Search Step 2 - Link Logic - DONE", "/////\n");
 
@@ -160,8 +161,9 @@ exports.postLink = async (req, res) => {
   const apiData = req.body;
 
   try {
-    const nodes = [apiData.node1, apiData.node2];
-    await Link.create({ nodes });
+    // const nodes = [apiData.node1, apiData.node2];
+    // await Link.create({ nodes });
+    await createLink({ node1: apiData.node1, node2: apiData.node2 });
 
     // link creation was successful
     const linkColor = randomColor();
