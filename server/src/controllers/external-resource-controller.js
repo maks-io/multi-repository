@@ -79,6 +79,10 @@ const searchByTerm = async (req, res) => {
       ? result.map(TRANSFORM_FUNCTION)
       : result;
 
+    // if (platform === "TISS" && type === "PROJECT") {
+    //   console.log("***********************", preparedUrl);
+    // }
+
     const idPath =
       externalApiConfig[platform][type]["SEARCH_BY_TERM"].RESULT.STRUCTURE.id;
     const resultsWithIdentifiers = transformedResult.map(o => ({
@@ -128,6 +132,10 @@ const getById = async (platform, type, id, groupId) => {
     const transformedResult = TRANSFORM_FUNCTION
       ? TRANSFORM_FUNCTION(result)
       : result;
+
+    if (platform === "TISS" && type === "PROJECT") {
+      console.log("***********************", result);
+    }
 
     const idPath =
       externalApiConfig[platform][type]["SEARCH_BY_TERM"].RESULT.STRUCTURE.id;
