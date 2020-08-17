@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import LineTo from "react-lineto";
 import { Card } from "antd";
 import LinkTag from "./comps/link-tag";
 import SourceTag from "./comps/source-tag";
@@ -6,7 +7,6 @@ import OriginalSourceTag from "./comps/original-source-tag";
 import ResultItemTitleAndHeader from "./comps/result-item-title-and-header";
 import { constants } from "../../../../../../constants";
 import { colors } from "../../../../../../colors";
-import { ArcherContainer, ArcherElement } from "react-archer";
 
 class ResultItem extends Component {
   shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -104,100 +104,116 @@ class ResultItem extends Component {
 
     return (
       <div style={{ display: "flex", justifyContent: "flex" }}>
-        <ArcherElement id={identifier} relations={relations}>
-          <Card
-            size="small"
+        <Card
+          className={`card-for-${identifier}`}
+          size="small"
+          style={{
+            zIndex: 2,
+            borderRadius: "0.5rem",
+            margin: "0.3rem",
+            cursor: "pointer",
+            borderWidth: 7,
+            borderColor: isHighlighted
+              ? colors.Focus
+              : linkTagStatus === "ACTIVE"
+              ? colors.EditLinks
+              : linkTagStatus === "POTENTIAL_LINK"
+              ? colors.AddLink
+              : linkTagStatus === "LINKED_ITEM"
+              ? colors.RemoveLink
+              : "transparent",
+            ...hoverStyle
+          }}
+          bodyStyle={{ padding: "0.3rem" }}
+          onMouseEnter={() => handleHoverItem(data.identifier, data.isPartOf)}
+          onMouseLeave={() => handleHoverItem(undefined)}
+          onClick={() => handleClickItem(data.identifier, data.isPartOf)}
+        >
+          <div
+            title={`my identifier is: ${identifier}`} // TODO
             style={{
-              borderRadius: "0.5rem",
-              margin: "0.3rem",
-              cursor: "pointer",
-              borderWidth: 7,
-              borderColor: isHighlighted
-                ? colors.Focus
-                : linkTagStatus === "ACTIVE"
-                ? colors.EditLinks
-                : linkTagStatus === "POTENTIAL_LINK"
-                ? colors.AddLink
-                : linkTagStatus === "LINKED_ITEM"
-                ? colors.RemoveLink
-                : "transparent",
-              ...hoverStyle
+              display: "flex",
+              flexDirection: "row"
             }}
-            bodyStyle={{ padding: "0.3rem" }}
-            onMouseEnter={() => handleHoverItem(data.identifier, data.isPartOf)}
-            onMouseLeave={() => handleHoverItem(undefined)}
-            onClick={() => handleClickItem(data.identifier, data.isPartOf)}
           >
             <div
-              title={`my identifier is: ${identifier}`}
               style={{
-                display: "flex",
-                flexDirection: "row"
+                width: "1.5rem",
+                fontWeight: "bold",
+                backgroundColor: "grey",
+                color: "white",
+                borderRadius: "0.3rem",
+                opacity: 0.6
               }}
             >
-              <div
-                style={{
-                  width: "1.5rem",
-                  fontWeight: "bold",
-                  backgroundColor: "grey",
-                  color: "white",
-                  borderRadius: "0.3rem",
-                  opacity: 0.6
-                }}
-              >
-                {index + 1}.
+              {index + 1}.
+            </div>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                flex: 1,
+                alignItems: "center"
+              }}
+            >
+              <div style={{ fontWeight: "bold", wordBreak: "break-all" }}>
+                <ResultItemTitleAndHeader
+                  resultStructure={resultStructure}
+                  platform={platform}
+                  type={type}
+                  data={data}
+                  fallbackAvatar={fallbackAvatar}
+                />
               </div>
               <div
+                className="tags"
                 style={{
                   display: "flex",
-                  flexDirection: "column",
+                  flexDirection: "row",
                   flex: 1,
-                  alignItems: "center"
+                  alignItems: "center",
+                  margin: "0.2rem"
                 }}
               >
-                <div style={{ fontWeight: "bold", wordBreak: "break-all" }}>
-                  <ResultItemTitleAndHeader
-                    resultStructure={resultStructure}
-                    platform={platform}
-                    type={type}
-                    data={data}
-                    fallbackAvatar={fallbackAvatar}
-                  />
-                </div>
-                <div
-                  className="tags"
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    flex: 1,
-                    alignItems: "center",
-                    margin: "0.2rem"
-                  }}
-                >
-                  <LinkTag
-                    fetchStep={fetchStep}
-                    nrOfLinks={data.isPartOf ? data.isPartOf.length : 0}
-                    platform={platform}
-                    type={type}
-                    identifier={identifier}
-                    handleLinkTagClick={handleLinkTagClick}
-                    linkEditInfo={linkEditInfo}
-                    isPartOf={data.isPartOf}
-                    handleRemoveLinkConfirm={handleRemoveLinkConfirm}
-                    handleAddLinkConfirm={handleAddLinkConfirm}
-                    linkTagStatus={linkTagStatus}
-                  />
-                  <SourceTag fetchStep={fetchStep} data={data} />
-                  <OriginalSourceTag
-                    platform={platform}
-                    type={type}
-                    data={data}
-                  />
-                </div>
+                <LinkTag
+                  fetchStep={fetchStep}
+                  nrOfLinks={data.isPartOf ? data.isPartOf.length : 0}
+                  platform={platform}
+                  type={type}
+                  identifier={identifier}
+                  handleLinkTagClick={handleLinkTagClick}
+                  linkEditInfo={linkEditInfo}
+                  isPartOf={data.isPartOf}
+                  handleRemoveLinkConfirm={handleRemoveLinkConfirm}
+                  handleAddLinkConfirm={handleAddLinkConfirm}
+                  linkTagStatus={linkTagStatus}
+                />
+                <SourceTag fetchStep={fetchStep} data={data} />
+                <OriginalSourceTag
+                  platform={platform}
+                  type={type}
+                  data={data}
+                />
               </div>
             </div>
-          </Card>
-        </ArcherElement>
+          </div>
+        </Card>
+        {relations.map(r => (
+          <LineTo
+            from={`card-for-${identifier}`}
+            to={`card-for-${r.targetId}`}
+            borderWidth={5}
+            onClick={() => {
+              console.log("test clisck");
+            }}
+            onMouseEnter={()=>{
+                console.log("onMouseEnter")
+            }}
+            onMouseLeave={()=>{
+                console.log("onMouseLeave")
+            }}
+          />
+        ))}
       </div>
     );
   }

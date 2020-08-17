@@ -7,7 +7,6 @@ import ResultColumn from "./comps/result-column";
 import { fetchLinks } from "./services/fetch-links";
 import { constants } from "../../constants";
 import { colors } from "../../colors";
-import { ArcherContainer } from "react-archer";
 
 const LOADING_MESSAGE_KEY = "loadingMessage";
 
@@ -515,15 +514,6 @@ class MainScreen extends Component {
     const resourcesFlat = this.getResourcesFlat();
     const numberOfResources = externalResources.length;
 
-    //
-    // const Wrapper = ({ children }) => {
-    //   return isLoading ? (
-    //     <React.Fragment>{children}</React.Fragment>
-    //   ) : (
-    //     <ArcherContainer>{children}</ArcherContainer>
-    //   );
-    // };
-
     return (
       <div
         id={"main-screen"}
@@ -623,39 +613,37 @@ class MainScreen extends Component {
             marginTop: 0
           }}
         >
-          <ArcherContainer strokeColor={"red"}>
-            <div
-              style={{
-                position: "relative",
-                display: "flex",
-                flexDirection: "row"
-              }}
-            >
-              {resourcesFlat.map(resource => (
-                <ResultColumn
-                  key={`${resource.platform}_${resource.type}`}
-                  platform={resource.platform}
-                  type={resource.type}
-                  loadingStep={fetchStep}
-                  logoUrl={resource.logoUrl}
-                  fallbackAvatar={resource.fallbackAvatar}
-                  items={resource.items}
-                  isLoading={resource.isLoading}
-                  mode={mode}
-                  fetchStep={fetchStep}
-                  handleHoverItem={this.handleHoverItem}
-                  hoverInfo={this.state.hoverInfo}
-                  handleClickItem={this.handleClickItem}
-                  focusInfo={this.state.focusInfo}
-                  linkEditInfo={this.state.linkEditInfo}
-                  columnWidth={`${90 / numberOfResources}vw`}
-                  handleLinkTagClick={this.handleLinkTagClick}
-                  handleRemoveLinkConfirm={this.handleRemoveLinkConfirm}
-                  handleAddLinkConfirm={this.handleAddLinkConfirm}
-                />
-              ))}
-            </div>
-          </ArcherContainer>
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "row"
+            }}
+          >
+            {resourcesFlat.map(resource => (
+              <ResultColumn
+                key={`${resource.platform}_${resource.type}`}
+                platform={resource.platform}
+                type={resource.type}
+                loadingStep={fetchStep}
+                logoUrl={resource.logoUrl}
+                fallbackAvatar={resource.fallbackAvatar}
+                items={resource.items}
+                isLoading={resource.isLoading}
+                mode={mode}
+                fetchStep={fetchStep}
+                handleHoverItem={this.handleHoverItem}
+                hoverInfo={this.state.hoverInfo}
+                handleClickItem={this.handleClickItem}
+                focusInfo={this.state.focusInfo}
+                linkEditInfo={this.state.linkEditInfo}
+                columnWidth={`${90 / numberOfResources}vw`}
+                handleLinkTagClick={this.handleLinkTagClick}
+                handleRemoveLinkConfirm={this.handleRemoveLinkConfirm}
+                handleAddLinkConfirm={this.handleAddLinkConfirm}
+              />
+            ))}
+          </div>
         </div>
       </div>
     );
