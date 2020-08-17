@@ -5,7 +5,7 @@ const { getById } = require("./external-resource-controller");
 const { processResults } = require("../services/process-results");
 const Link = require("../models/Link");
 const { createLink } = require("../graphdb/links");
-const { externalApiConfig } = require("../external-apis");
+const { externalApiConfig } = require("../config/external-apis");
 
 exports.fetchLinks = async (req, res) => {
   const apiData = req.body;

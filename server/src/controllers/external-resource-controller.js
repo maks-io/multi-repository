@@ -2,7 +2,7 @@ const axios = require("axios");
 const _ = require("lodash");
 const dotenv = require("dotenv");
 dotenv.config();
-const { externalApiConfig } = require("../external-apis");
+const { externalApiConfig } = require("../config/external-apis");
 const { createIdentifier } = require("../services/create-identifier");
 
 /*

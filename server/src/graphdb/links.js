@@ -50,7 +50,7 @@ const convertTripleToLink = triple => {
 };
 
 const convertLinkToTriple = link => {
-  const { node1, node2 } = link;
+  const { node1, node2, relationship } = link;
   const identifierNode1 = createIdentifier(
     node1.platform,
     node1.type,
@@ -63,7 +63,12 @@ const convertLinkToTriple = link => {
     node2.id,
     DELIMITER
   );
-  return { s: identifierNode1, p: PREDICATE, o: identifierNode2 };
+  return { s: identifierNode1, p: relationship, o: identifierNode2 };
 };
 
-module.exports = { deleteAllLinks, getAllLinks, createLink,createMultipleLinks };
+module.exports = {
+  deleteAllLinks,
+  getAllLinks,
+  createLink,
+  createMultipleLinks
+};
