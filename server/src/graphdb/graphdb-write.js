@@ -68,7 +68,21 @@ const writeToDB = async (subject, predicate, obj) => {
   }
 };
 
-module.exports = { writeToDB };
+const clearDB = async () => {
+  const repository = await getGraphDBRDFRepositoryClient();
+  const query = "CLEAR SILENT ALL";
+  const payload = createWritePayload(query);
+
+  try {
+    const result = await repository.update(payload);
+    console.log("Clearing GraphDB - SUCCESS");
+  } catch (error) {
+    console.error("Clearing GraphDB - ERROR" + error);
+    // console.error("Writing to GraphDB - ERROR:", error);
+  }
+};
+
+module.exports = { writeToDB, clearDB };
 /*
 
 return repository.update(payload).then(() => {

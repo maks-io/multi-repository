@@ -1,3 +1,4 @@
+const {initGraphDBServerClient} = require("./graphdb-server-client");
 const { GraphDB } = require("./graphdb-server-client");
 
 let rdfRepositoryClient;
@@ -16,6 +17,7 @@ const getGraphDBRDFRepositoryClient = async () => {
 
   const { RepositoryClientConfig } = graphdb.repository;
 
+  await initGraphDBServerClient()
   const server = GraphDB();
 
   const readTimeout = 30000;

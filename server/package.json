@@ -4,7 +4,10 @@
   "description": "",
   "main": "start.js",
   "scripts": {
-    "start": "nodemon ./start.js"
+    "start": "nodemon ./start.js",
+    "blowitallaway": "node ./src/data/load-sample-data.js --delete",
+    "sample": "node ./src/data/load-sample-data.js",
+    "resample": "node ./src/data/load-sample-data.js --delete && node ./src/data/load-sample-data.js"
   },
   "author": "",
   "license": "ISC",
