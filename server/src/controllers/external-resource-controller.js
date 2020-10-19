@@ -79,10 +79,6 @@ const searchByTerm = async (req, res) => {
       ? result.map(TRANSFORM_FUNCTION)
       : result;
 
-    // if (platform === "TISS" && type === "PROJECT") {
-    //   console.log("***********************", preparedUrl);
-    // }
-
     const idPath =
       externalApiConfig[platform][type]["SEARCH_BY_TERM"].RESULT.STRUCTURE.id;
     const resultsWithIdentifiers = transformedResult.map(o => ({
@@ -110,7 +106,7 @@ const searchByTerm = async (req, res) => {
  *
  * Gets called by server.
  */
-const getById = async (platform, type, id, groupId) => {
+const getById = async (platform, type, id, groupId, relationship) => {
   const config = externalApiConfig[platform][type].GET_BY_ID;
 
   const urlForGetById = config.QUERY.URL;
@@ -133,10 +129,6 @@ const getById = async (platform, type, id, groupId) => {
       ? TRANSFORM_FUNCTION(result)
       : result;
 
-    if (platform === "TISS" && type === "PROJECT") {
-      console.log("***********************", result);
-    }
-
     const idPath =
       externalApiConfig[platform][type]["SEARCH_BY_TERM"].RESULT.STRUCTURE.id;
     const resultWithIdentifier = {
@@ -156,7 +148,7 @@ const getById = async (platform, type, id, groupId) => {
       ...resultWithIdentifier,
       resultStructure: config.RESULT.STRUCTURE,
       isNew: true,
-      isPartOf: [groupId]
+      isPartOf: [{ link: groupId, relationship }]
     };
 
     return data;

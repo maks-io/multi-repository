@@ -59,22 +59,28 @@ const readFromDB = async (subject, predicate, obj) => {
 */
     await new Promise(fulfill => resultStream.on("end", fulfill));
 
-    const filteredData = data.filter(triple => {
-      const asString = JSON.stringify(triple);
-      return (
-        triple.s.id.startsWith(prefixValueDefault) &&
-        triple.p.id.startsWith(prefixValueDefault) &&
-        triple.o.id.startsWith(prefixValueDefault) &&
-        !asString.includes("#Property") &&
-        !asString.includes("#type") &&
-        !asString.includes("#nil") &&
-        !asString.includes("#List")
-      );
-    });
+    const filteredData = data
+      .filter(triple => {
+        const asString = JSON.stringify(triple);
+        return (
+          triple.s.id.startsWith(prefixValueDefault) &&
+          triple.p.id.startsWith(prefixValueDefault) &&
+          triple.o.id.startsWith(prefixValueDefault) &&
+          !asString.includes("#Property") &&
+          !asString.includes("#type") &&
+          !asString.includes("#nil") &&
+          !asString.includes("#List")
+        );
+      })
+      .map(triple => ({
+        s: triple.s.id.split(prefixValueDefault)[1],
+        p: triple.p.id.split(prefixValueDefault)[1],
+        o: triple.o.id.split(prefixValueDefault)[1]
+      }));
 
-    console.log("bindings length = ", data.length);
-    console.log("filteredData length = ", filteredData.length);
-    console.log("filteredData  = ", filteredData);
+    // console.log("bindings length = ", data.length);
+    // console.log("filteredData length = ", filteredData.length);
+    // console.log("filteredData  = ", filteredData);
     return filteredData;
     // console.log("result", result);
   } catch (error) {

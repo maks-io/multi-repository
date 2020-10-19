@@ -130,7 +130,7 @@ const externalApiConfig = {
         }
       }
     },
-    PROJECT: {
+    /*PROJECT: {
       LOGO_URL:
         "https://about.gitlab.com/images/press/logo/png/gitlab-logo-gray-rgb.png",
       SEARCH_BY_TERM: {
@@ -168,7 +168,7 @@ const externalApiConfig = {
           }
         }
       }
-    }
+    }*/
   },
   TISS: {
     PERSON: {

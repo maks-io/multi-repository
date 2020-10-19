@@ -27,11 +27,24 @@ class MainScreen extends Component {
   };
 
   componentDidMount = async () => {
-    const externalResources = (await axios.get("/api/external-resources")).data;
-    this.setState({ externalResources }, () => {
-      const initialResources = this.getInitialResources(false);
-      this.setState({ resourcesState: initialResources });
-    });
+    const externalResourcesPromise = axios.get("/api/external-resources");
+    const relationshipsPromise = axios.get("/api/relationships");
+
+    const [externalResources, relationships] = await Promise.all([
+      externalResourcesPromise,
+      relationshipsPromise
+    ]);
+
+    this.setState(
+      {
+        externalResources: externalResources.data,
+        relationships: relationships.data
+      },
+      () => {
+        const initialResources = this.getInitialResources(false);
+        this.setState({ resourcesState: initialResources });
+      }
+    );
   };
 
   getInitialResources = isLoading => {
@@ -295,7 +308,7 @@ class MainScreen extends Component {
 
   debouncedSearch = _.debounce(this.search, 1000);
 
-  handleHoverItem = (identifier, linkIds) => {
+  handleHoverItem = (identifier, links) => {
     if (this.state.mode === constants.mode.EDIT_LINKS) {
       // avoid hovering when editing links
       return;
@@ -303,7 +316,9 @@ class MainScreen extends Component {
     if (!identifier) {
       this.setState({ hoverInfo: {} });
     } else {
-      this.setState({ hoverInfo: { identifier, linkIds } });
+      this.setState({
+        hoverInfo: { identifier, linkIds: links.map(link => link.link) }
+      });
     }
   };
 
@@ -323,7 +338,10 @@ class MainScreen extends Component {
     }
   };
 
-  handleLinkTagClick = (identifier, linkIds) => {
+  handleLinkTagClick = (identifier, links) => {
+    console.log("linkssss", links);
+    const linkIds = links.map(l => l.link);
+
     if (identifier === this.state.linkEditInfo.activeIdentifier) {
       // already in mode EDIT_LINKS => go back to mode SEARCH:
 
@@ -338,7 +356,11 @@ class MainScreen extends Component {
       const linkedItemsIdentifiers = [];
       this.state.externalResources.forEach(er => {
         resourcesState[er.platform][er.type].items.forEach(item => {
-          if (linkIds.some(linkId => item.isPartOf.includes(linkId))) {
+          if (
+            linkIds.some(linkId =>
+              item.isPartOf.map(l => l.link).includes(linkId)
+            )
+          ) {
             item.isSticky = true;
             linkedItemsIdentifiers.push(item.identifier);
           }
@@ -383,7 +405,7 @@ class MainScreen extends Component {
       const clonedResourcesState = _.cloneDeep(this.state.resourcesState);
       this.state.externalResources.forEach(er => {
         clonedResourcesState[er.platform][er.type].items.forEach(item => {
-          item.isPartOf = item.isPartOf.filter(id => id !== linkId);
+          item.isPartOf = item.isPartOf.filter(id => id.link !== linkId);
           if (item.identifier === identifier) {
             item.isSticky = false;
           }
@@ -415,7 +437,7 @@ class MainScreen extends Component {
     }
   };
 
-  handleAddLinkConfirm = async (event, identifier) => {
+  handleAddLinkConfirm = async (event, identifier, relationship) => {
     const activeElement = this.getItemByIdentifier(
       this.state.linkEditInfo.activeIdentifier
     );
@@ -433,13 +455,14 @@ class MainScreen extends Component {
             platform: linkElement.platform,
             type: linkElement.type,
             id: linkElement.id
-          }
+          },
+          relationship
         })
       ).data;
 
       const resourcesState = this.getUpdatedResourcesStateWithNewLinkId(
         [activeElement.identifier, identifier],
-        newLinkId
+        { link: newLinkId, relationship }
       );
 
       this.setState({
@@ -469,6 +492,7 @@ class MainScreen extends Component {
   };
 
   getUpdatedResourcesStateWithNewLinkId = (identifiers, newLinkId) => {
+    // console.log("getUpdatedResourcesStateWithNewLinkId")
     const clonedResourcesState = _.cloneDeep(this.state.resourcesState);
     const identifierOfNewlyLinkedItem = identifiers[1];
     this.state.externalResources.forEach(er => {
@@ -641,6 +665,7 @@ class MainScreen extends Component {
                 handleLinkTagClick={this.handleLinkTagClick}
                 handleRemoveLinkConfirm={this.handleRemoveLinkConfirm}
                 handleAddLinkConfirm={this.handleAddLinkConfirm}
+                relationships={this.state.relationships}
               />
             ))}
           </div>

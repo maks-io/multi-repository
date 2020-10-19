@@ -47,7 +47,6 @@ class ResultItem extends Component {
       resultStructure,
       data,
       fallbackAvatar,
-      fetchStep,
       index,
       platform,
       type,
@@ -62,7 +61,9 @@ class ResultItem extends Component {
       mode,
       linkTagStatus,
       isHighlighted,
-      hoverStyle
+      hoverStyle,
+      relationships,
+      loadingStep
     } = this.props;
 
     if (mode === constants.mode.FOCUS) {
@@ -71,7 +72,7 @@ class ResultItem extends Component {
         if (focusInfo.identifier !== data.identifier) {
           return null;
         }
-      } else if (!data.isPartOf.some(r => focusInfo.linkIds.includes(r))) {
+      } else if (!data.isPartOf.some(r => focusInfo.linkIds.includes(r.link))) {
         return null;
       }
     }
@@ -81,26 +82,8 @@ class ResultItem extends Component {
     }
     // console.log("identifier", identifier);
 
-    const relations = data.isPartOf
-      .map(p => {
-        const linkNodes = p.split(":::::");
-        const nodeOneIdentifier = linkNodes[0];
-        const nodeTwoIdentifier = linkNodes[1];
-        console.log("le link nodes are", linkNodes);
-        console.log("le link idenfier is", identifier);
-        if (nodeOneIdentifier === identifier) {
-          console.log("le link HIIIIIII", identifier);
-          return {
-            targetId: nodeTwoIdentifier,
-            targetAnchor: "top",
-            sourceAnchor: "bottom",
-            style: { strokeColor: "blue", strokeWidth: 1 },
-            label: <div style={{ marginTop: "-20px" }}>Arrow 2</div>
-          };
-        }
-      })
-      .filter(x => Boolean(x));
-    console.log("le relations are", relations);
+
+    // console.log("le relations are", relations);
 
     return (
       <div style={{ display: "flex", justifyContent: "flex" }}>
@@ -176,7 +159,7 @@ class ResultItem extends Component {
                 }}
               >
                 <LinkTag
-                  fetchStep={fetchStep}
+                  loadingStep={loadingStep}
                   nrOfLinks={data.isPartOf ? data.isPartOf.length : 0}
                   platform={platform}
                   type={type}
@@ -187,8 +170,9 @@ class ResultItem extends Component {
                   handleRemoveLinkConfirm={handleRemoveLinkConfirm}
                   handleAddLinkConfirm={handleAddLinkConfirm}
                   linkTagStatus={linkTagStatus}
+                  relationships={relationships}
                 />
-                <SourceTag fetchStep={fetchStep} data={data} />
+                <SourceTag loadingStep={loadingStep} data={data} />
                 <OriginalSourceTag
                   platform={platform}
                   type={type}
@@ -197,23 +181,24 @@ class ResultItem extends Component {
               </div>
             </div>
           </div>
-        </Card>
+        </Card>{/*
         {relations.map(r => (
           <LineTo
             from={`card-for-${identifier}`}
             to={`card-for-${r.targetId}`}
             borderWidth={5}
+            borderColor={r.color}
             onClick={() => {
               console.log("test clisck");
             }}
-            onMouseEnter={()=>{
-                console.log("onMouseEnter")
+            onMouseEnter={() => {
+              console.log("onMouseEnter");
             }}
-            onMouseLeave={()=>{
-                console.log("onMouseLeave")
+            onMouseLeave={() => {
+              console.log("onMouseLeave");
             }}
           />
-        ))}
+        ))}*/}
       </div>
     );
   }

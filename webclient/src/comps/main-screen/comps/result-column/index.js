@@ -1,23 +1,24 @@
 import React, { Component } from "react";
-import { Icon } from "antd";
+import { Card, Icon } from "antd";
 import ResultItem from "./comps/result-item";
 import ResultColumnHeader from "./comps/result-column-header";
 import { constants } from "../../../../constants";
 import { colors } from "../../../../colors";
+import LineTo from "react-lineto";
 
 const HOVER_DIRECT_COLOR = colors.BlueMunsell;
 const HOVER_INDIRECT_COLOR = colors.Silver;
 
 class ResultColumn extends Component {
   render() {
-    const {loadingStep,
+    const {
+      loadingStep,
       platform,
       type,
       logoUrl,
       fallbackAvatar,
       items,
       isLoading,
-      fetchStep,
       handleHoverItem,
       hoverInfo,
       handleClickItem,
@@ -27,7 +28,8 @@ class ResultColumn extends Component {
       mode,
       handleRemoveLinkConfirm,
       handleAddLinkConfirm,
-      handleLinkTagClick
+      handleLinkTagClick,
+      relationships
     } = this.props;
 
     return (
@@ -114,30 +116,79 @@ class ResultColumn extends Component {
                         )
                       ? "LINKED_ITEM"
                       : "POTENTIAL_LINK";
+
+                    const relations = i.isPartOf
+                      .map(p => {
+                        console.log("LALALA", p);
+                        const linkNodes = p.link.split(":::::");
+                        const nodeOneIdentifier = linkNodes[0];
+                        const nodeTwoIdentifier = linkNodes[1];
+                        // console.log("le link nodes are", linkNodes);
+                        // console.log("le link idenfier is", identifier);
+                        if (nodeOneIdentifier === i.identifier) {
+                          // console.log("le link HIIIIIII", identifier);
+                          const { relationship: r } = p;
+                          const relationship = relationships[r];
+                          const { color } = relationship;
+                          console.log("color is", color);
+
+                          return {
+                            targetId: nodeTwoIdentifier,
+                            targetAnchor: "top",
+                            sourceAnchor: "bottom",
+                            color,
+                            style: { strokeColor: color, strokeWidth: 1 },
+                            label: (
+                              <div style={{ marginTop: "-20px" }}>Arrow 2</div>
+                            )
+                          };
+                        }
+                      })
+                      .filter(x => Boolean(x));
+
                     return (
-                      <ResultItem
+                      <div>
+                        <ResultItem
                           loadingStep={loadingStep}
-                        key={i.identifier}
-                        data={i}
-                        index={index}
-                        mode={mode}
-                        platform={platform}
-                        type={type}
-                        identifier={i.identifier}
-                        fallbackAvatar={fallbackAvatar}
-                        handleHoverItem={handleHoverItem}
-                        hoverInfo={hoverInfo}
-                        handleClickItem={handleClickItem}
-                        focusInfo={focusInfo}
-                        linkEditInfo={linkEditInfo}
-                        fetchStep={fetchStep}
-                        handleLinkTagClick={handleLinkTagClick}
-                        handleRemoveLinkConfirm={handleRemoveLinkConfirm}
-                        handleAddLinkConfirm={handleAddLinkConfirm}
-                        linkTagStatus={linkTagStatus}
-                        isHighlighted={isHighlighted}
-                        hoverStyle={hoverStyle}
-                      />
+                          key={i.identifier}
+                          data={i}
+                          index={index}
+                          mode={mode}
+                          platform={platform}
+                          type={type}
+                          identifier={i.identifier}
+                          fallbackAvatar={fallbackAvatar}
+                          handleHoverItem={handleHoverItem}
+                          hoverInfo={hoverInfo}
+                          handleClickItem={handleClickItem}
+                          focusInfo={focusInfo}
+                          linkEditInfo={linkEditInfo}
+                          handleLinkTagClick={handleLinkTagClick}
+                          handleRemoveLinkConfirm={handleRemoveLinkConfirm}
+                          handleAddLinkConfirm={handleAddLinkConfirm}
+                          linkTagStatus={linkTagStatus}
+                          isHighlighted={isHighlighted}
+                          hoverStyle={hoverStyle}
+                          relationships={relationships}
+                        />
+                        {relations.map(r => (
+                          <LineTo
+                            from={`card-for-${i.identifier}`}
+                            to={`card-for-${r.targetId}`}
+                            borderWidth={5}
+                            borderColor={r.color}
+                            onClick={() => {
+                              console.log("test clisck");
+                            }}
+                            onMouseEnter={() => {
+                              console.log("onMouseEnter");
+                            }}
+                            onMouseLeave={() => {
+                              console.log("onMouseLeave");
+                            }}
+                          />
+                        ))}
+                      </div>
                     );
                   })}
                 </div>

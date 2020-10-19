@@ -11,8 +11,9 @@ const deleteAllLinks = async () => {
 };
 
 const getAllLinks = async () => {
-  const allLinks = await readFromDB(undefined, undefined, undefined);
-  return allLinks;
+  const allTriples = await readFromDB(undefined, undefined, undefined);
+  console.log("triples are", allTriples);
+  return allTriples.map(triple => convertTripleToLink(triple));
 };
 
 const createLink = async link => {
@@ -45,8 +46,9 @@ const convertTripleToLink = triple => {
     type: oSplit[1],
     id: oSplit[2]
   };
+  const relationship = triple.p;
 
-  return { node1, node2 };
+  return { node1, node2, relationship };
 };
 
 const convertLinkToTriple = link => {
