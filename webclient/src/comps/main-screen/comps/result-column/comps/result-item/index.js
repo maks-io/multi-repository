@@ -16,7 +16,7 @@ class ResultItem extends Component {
       focusInfo: focusInfoNew,
       linkTagStatus: linkTagStatusNew,
       isHighlighted: isHighlightedNew,
-      hoverStyle: hoverStyleNew
+      hoverStyle: hoverStyleNew,relationships:relationshipsNew
     } = nextProps;
 
     const {
@@ -25,7 +25,7 @@ class ResultItem extends Component {
       focusInfo,
       linkTagStatus,
       isHighlighted,
-      hoverStyle
+      hoverStyle,relationships
     } = this.props;
 
     if (
@@ -34,7 +34,8 @@ class ResultItem extends Component {
       JSON.stringify(focusInfoNew) !== JSON.stringify(focusInfo) ||
       JSON.stringify(linkTagStatusNew) !== JSON.stringify(linkTagStatus) ||
       JSON.stringify(isHighlightedNew) !== JSON.stringify(isHighlighted) ||
-      JSON.stringify(hoverStyleNew) !== JSON.stringify(hoverStyle)
+      JSON.stringify(hoverStyleNew) !== JSON.stringify(hoverStyle)||
+      JSON.stringify(relationshipsNew) !== JSON.stringify(relationships)
     ) {
       return true;
     }
@@ -65,6 +66,9 @@ class ResultItem extends Component {
       relationships,
       loadingStep
     } = this.props;
+
+    console.log("data.ispartof",data.isPartOf)
+    console.log("focusInfo.linkIds",focusInfo.linkIds)
 
     if (mode === constants.mode.FOCUS) {
       // some item is focused!

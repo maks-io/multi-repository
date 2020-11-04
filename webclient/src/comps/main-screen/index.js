@@ -333,7 +333,7 @@ class MainScreen extends Component {
     } else {
       this.setState({
         mode: constants.mode.FOCUS,
-        focusInfo: { identifier, linkIds }
+        focusInfo: { identifier, linkIds: linkIds.map(linkId => linkId.link) }
       });
     }
   };
@@ -401,6 +401,8 @@ class MainScreen extends Component {
         }
       });
 
+      console.log(1)
+
       // now remove the link on UI side:
       const clonedResourcesState = _.cloneDeep(this.state.resourcesState);
       this.state.externalResources.forEach(er => {
@@ -411,17 +413,19 @@ class MainScreen extends Component {
           }
         });
       });
+      console.log(2, linkId)
 
       this.setState({
         resourcesState: clonedResourcesState,
         linkEditInfo: {
           activeIdentifier: this.state.linkEditInfo.activeIdentifier,
-          linkIds: this.state.linkEditInfo.linkIds.filter(id => id !== linkId),
+          linkIds: this.state.linkEditInfo.linkIds.filter(id => id !== linkId.link),
           linkedItemsIdentifiers: this.state.linkEditInfo.linkedItemsIdentifiers.filter(
             l => l !== identifier
           )
         }
       });
+      console.log(3)
 
       message.success({
         content: "Link successfully removed!",
@@ -462,14 +466,14 @@ class MainScreen extends Component {
 
       const resourcesState = this.getUpdatedResourcesStateWithNewLinkId(
         [activeElement.identifier, identifier],
-        { link: newLinkId, relationship }
+        { link: `${activeElement.identifier}:::::${identifier}`, relationship }
       );
 
       this.setState({
         resourcesState,
         linkEditInfo: {
           ...this.state.linkEditInfo,
-          linkIds: [...this.state.linkEditInfo.linkIds, newLinkId],
+          // linkIds: [...this.state.linkEditInfo.linkIds, newLinkId],
           linkedItemsIdentifiers: [
             ...this.state.linkEditInfo.linkedItemsIdentifiers,
             identifier

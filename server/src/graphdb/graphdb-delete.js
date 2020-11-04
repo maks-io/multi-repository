@@ -7,7 +7,7 @@ const { QueryContentType } = require("graphdb").http;
 
 /*
 // useful link:
-// https://docs.marklogic.com/guide/semantics/sparql-update
+// https://docs.marklogic.com/guide/semantics/sparql-update#id_48525
 const q = `
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 INSERT DATA
@@ -20,7 +20,7 @@ INSERT DATA
 const prefixKeyDefault = "rdf";
 const prefixValueDefault = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
-const createWriteQuery = (
+const createDeleteQuery = (
   prefixKey = prefixKeyDefault,
   prefixValue = prefixValueDefault,
   subject,
@@ -30,32 +30,32 @@ const createWriteQuery = (
   if (!subject) {
     throw new Error("Subject of query is undefined");
   }
-  if (!predicate) {
-    throw new Error("Predicate of query is undefined");
-  }
+  // if (!predicate) {
+  //   throw new Error("Predicate of query is undefined");
+  // }
   if (!obj) {
     throw new Error("Object of query is undefined");
   }
 
- return `
+  return `
            PREFIX ${prefixKey}: <${prefixValue}>
-           INSERT DATA
+           DELETE WHERE
            {
-             ${prefixKey}:${subject} ${prefixKey}:${predicate} ${prefixKey}:${obj}
+             ${prefixKey}:${subject} ?p ${prefixKey}:${obj}
            }
-
         `;
 
- //return `
- //          PREFIX ${prefixKey}: <${prefixValue}>
- //          INSERT DATA
- //          {
- //            ${subject} ${predicate} ${obj}
- //          }
- //       `;
+
+  //return `
+  //          PREFIX ${prefixKey}: <${prefixValue}>
+  //          INSERT DATA
+  //          {
+  //            ${subject} ${predicate} ${obj}
+  //          }
+  //       `;
 };
 
-const createWritePayload = writeQuery => {
+const createDeletePayload = writeQuery => {
   return new UpdateQueryPayload()
     .setQuery(writeQuery)
     .setContentType(QueryContentType.SPARQL_UPDATE)
@@ -63,35 +63,21 @@ const createWritePayload = writeQuery => {
     .setTimeout(5);
 };
 
-const writeToDB = async (subject, predicate, obj) => {
+const deleteFromDB = async (subject, predicate, obj) => {
   const repository = await getGraphDBRDFRepositoryClient();
-  const query = createWriteQuery(undefined, undefined, subject, predicate, obj);
-  const payload = createWritePayload(query);
+  const query = createDeleteQuery(undefined, undefined, subject, predicate, obj);
+  const payload = createDeletePayload(query);
 
   try {
     const result = await repository.update(payload);
-    console.log("Writing to GraphDB - SUCCESS");
+    console.log("Deleting from GraphDB - SUCCESS");
   } catch (error) {
-    console.error("Writing to GraphDB - ERROR");
+    console.error("Deleting from GraphDB - ERROR");
     // console.error("Writing to GraphDB - ERROR:", error);
   }
 };
 
-const clearDB = async () => {
-  const repository = await getGraphDBRDFRepositoryClient();
-  const query = "CLEAR SILENT ALL";
-  const payload = createWritePayload(query);
-
-  try {
-    const result = await repository.update(payload);
-    console.log("Clearing GraphDB - SUCCESS");
-  } catch (error) {
-    console.error("Clearing GraphDB - ERROR" + error);
-    // console.error("Writing to GraphDB - ERROR:", error);
-  }
-};
-
-module.exports = { writeToDB, clearDB };
+module.exports = { deleteFromDB };
 /*
 
 return repository.update(payload).then(() => {

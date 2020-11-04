@@ -103,13 +103,14 @@ const LinkTag = props => {
     return (
       <Popconfirm
         title="Do you really want to remove this link?"
-        onConfirm={() => {
+        onConfirm={event => {
           const linkIdsOfActiveElement = linkEditInfo.linkIds;
-          const linkIdsOfClickedElement = isPartOf;
+          const linkIdsOfClickedElement = isPartOf.map(l => l.link);
           const linkId = linkIdsOfActiveElement.filter(value =>
             linkIdsOfClickedElement.includes(value)
           )[0];
           handleRemoveLinkConfirm(identifier, linkId);
+          event.stopPropagation();
         }}
         onCancel={null}
         okText="Yes"
@@ -160,7 +161,7 @@ const LinkTag = props => {
           <NodeIndexOutlined /> <PlusOutlined />
         </Tag>
         <Modal
-          title={"Creat new link..."}
+          title={"Create new link..."}
           visible={showNewLinkModal}
           onOk={e => {
             console.log("on ok", e);

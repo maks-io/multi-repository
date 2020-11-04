@@ -92,7 +92,7 @@ class ResultColumn extends Component {
                       ) {
                         hoverStyle.backgroundColor = HOVER_INDIRECT_COLOR;
                       } else if (
-                        i.isPartOf.some(r => hoverInfo.linkIds.includes(r))
+                        i.isPartOf.some(r => hoverInfo.linkIds.includes(r.link))
                       ) {
                         hoverStyle.backgroundColor = HOVER_INDIRECT_COLOR;
                       }

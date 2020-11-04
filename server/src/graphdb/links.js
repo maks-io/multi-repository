@@ -1,10 +1,10 @@
+const { deleteFromDB } = require("./graphdb-delete");
 const { clearDB } = require("./graphdb-write");
 const { createIdentifier } = require("../services/create-identifier");
 const { writeToDB } = require("./graphdb-write");
 const { readFromDB } = require("./graphdb-read");
 
-const DELIMITER = ":::::"; // TODO move to cosntants etc
-const PREDICATE = "isLinkedTo"; // TODO move to cosntants etc
+const DELIMITER = ":::::";
 
 const deleteAllLinks = async () => {
   await clearDB();
@@ -12,13 +12,18 @@ const deleteAllLinks = async () => {
 
 const getAllLinks = async () => {
   const allTriples = await readFromDB(undefined, undefined, undefined);
-  console.log("triples are", allTriples);
+  // console.log("triples are", allTriples);
   return allTriples.map(triple => convertTripleToLink(triple));
 };
 
 const createLink = async link => {
   const triple = convertLinkToTriple(link);
   await writeToDB(triple.s, triple.p, triple.o);
+};
+
+const deleteLink = async link => {
+  const triple = convertLinkToTriple(link);
+  await deleteFromDB(triple.s, triple.p, triple.o);
 };
 
 const createMultipleLinks = async links => {
@@ -46,7 +51,7 @@ const convertTripleToLink = triple => {
     type: oSplit[1],
     id: oSplit[2]
   };
-  const relationship = triple.p;
+  const relationship = p;
 
   return { node1, node2, relationship };
 };
@@ -72,5 +77,6 @@ module.exports = {
   deleteAllLinks,
   getAllLinks,
   createLink,
-  createMultipleLinks
+  createMultipleLinks,
+  deleteLink
 };

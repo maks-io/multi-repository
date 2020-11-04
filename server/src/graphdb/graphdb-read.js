@@ -19,12 +19,11 @@ const createReadQuery = (
   predicate,
   obj
 ) => {
+
   return `
-            select * where {${
-              !subject ? "?s" : prefixKeyDefault + ":" + subject
-            } ${!predicate ? "?p" : prefixKeyDefault + ":" + predicate} ${
-    !obj ? "?o" : prefixKeyDefault + ":" + obj
-  }}
+            select * where {${!subject ? "?s" : prefixKey + ":" + subject} ${
+    !predicate ? "?p" : prefixKey + ":" + predicate
+  } ${!obj ? "?o" : prefixKey + ":" + obj}}
          `;
 };
 
@@ -38,7 +37,7 @@ const createReadPayload = readQuery =>
 const readFromDB = async (subject, predicate, obj) => {
   const repository = await getGraphDBRDFRepositoryClient();
   repository.registerParser(new SparqlJsonResultParser());
-  const query = createReadQuery(undefined, undefined, subject, predicate, obj);
+  const query = createReadQuery("rdf", undefined, subject, predicate, obj);
   console.log("read query is", query);
   const payload = createReadPayload(query);
 
@@ -80,7 +79,8 @@ const readFromDB = async (subject, predicate, obj) => {
 
     // console.log("bindings length = ", data.length);
     // console.log("filteredData length = ", filteredData.length);
-    // console.log("filteredData  = ", filteredData);
+    console.log("data  = ", data.length);
+    console.log("filteredData  = ", filteredData);
     return filteredData;
     // console.log("result", result);
   } catch (error) {

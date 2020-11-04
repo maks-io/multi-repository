@@ -1,9 +1,8 @@
 const { createIdentifier } = require("../services/create-identifier");
-const _ = require("lodash");
 const randomColor = require("randomcolor");
 const { getById } = require("./external-resource-controller");
 const { processResults } = require("../services/process-results");
-const Link = require("../models/Link");
+const { deleteLink } = require("../graphdb/links");
 const { getAllLinks } = require("../graphdb/links");
 const { createLink } = require("../graphdb/links");
 
@@ -139,7 +138,7 @@ const applyLinkLogic = async (individualResults, links) => {
           linkNodeOneType,
           linkNodeOneId,
           linkColor,
-            relationship
+          relationship
         )
       );
     } else {
@@ -217,26 +216,9 @@ exports.postLink = async (req, res) => {
 exports.deleteLink = async (req, res) => {
   console.log("Delete link...", "start");
   const apiData = req.body;
-  const { node1, node2 } = apiData;
 
   try {
-    const query = {
-      $and: [
-        {
-          nodes: {
-            $elemMatch: node1
-          }
-        },
-        {
-          nodes: {
-            $elemMatch: node2
-          }
-        }
-      ]
-    };
-    const deleteResult = await Link.findOneAndDelete(query);
-
-    console.log("deleteResult:", deleteResult);
+    await deleteLink(apiData);
 
     console.log("Delete new link...", "done");
     res.sendStatus(200);
