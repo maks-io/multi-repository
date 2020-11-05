@@ -1,5 +1,5 @@
-import React from "react";
-import { Popconfirm, Spin, Tag } from "antd";
+import React, { useState } from "react";
+import { Popconfirm, Spin, Tag, Modal, Radio } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import { DeleteOutlined, NodeIndexOutlined } from "@ant-design/icons/lib/icons";
 import PlusOutlined from "@ant-design/icons/lib/icons/PlusOutlined";
@@ -13,11 +13,11 @@ const antIcon = (
 );
 
 const Indicator = props => {
-  const { fetchStep, nrOfLinks } = props;
+  const { loadingStep, nrOfLinks } = props;
 
-  if (fetchStep === 0) {
+  if (loadingStep === 0) {
     return <span>?</span>;
-  } else if (fetchStep === 1) {
+  } else if (loadingStep === 1) {
     return <Spin indicator={antIcon} size={"small"} style={{ margin: 0 }} />;
   } else {
     return <span>{nrOfLinks}</span>;
@@ -26,7 +26,7 @@ const Indicator = props => {
 
 const LinkTag = props => {
   const {
-    fetchStep,
+    loadingStep,
     nrOfLinks,
     handleLinkTagClick,
     identifier,
@@ -34,16 +34,22 @@ const LinkTag = props => {
     isPartOf,
     handleRemoveLinkConfirm,
     handleAddLinkConfirm,
-    linkTagStatus
+    linkTagStatus,
+    relationships
   } = props;
+
+  const [showNewLinkModal, setShowNewLinkModal] = useState(false);
+  const [relationship, setRelationship] = useState(
+    Object.keys(relationships)[0]
+  );
 
   if (linkTagStatus === "STANDARD") {
     const opacity =
-      fetchStep === 0 || (fetchStep === -1 && nrOfLinks === 0) ? 0.5 : 1;
+      loadingStep === 0 || (loadingStep === -1 && nrOfLinks === 0) ? 0.5 : 1;
     const title =
-      fetchStep === -1
+      loadingStep === -1
         ? `This item has ${nrOfLinks} link(s).\nClick to add more links or delete existing ones...`
-        : fetchStep === 0
+        : loadingStep === 0
         ? "Links not fetched yet - please wait..."
         : "Fetching links - please wait...";
 
@@ -64,7 +70,7 @@ const LinkTag = props => {
       >
         <>
           <NodeIndexOutlined />{" "}
-          <Indicator fetchStep={fetchStep} nrOfLinks={nrOfLinks} />
+          <Indicator loadingStep={loadingStep} nrOfLinks={nrOfLinks} />
         </>
       </Tag>
     );
@@ -87,7 +93,7 @@ const LinkTag = props => {
       >
         <>
           <NodeIndexOutlined />{" "}
-          <Indicator fetchStep={fetchStep} nrOfLinks={nrOfLinks} />
+          <Indicator loadingStep={loadingStep} nrOfLinks={nrOfLinks} />
         </>
       </Tag>
     );
@@ -97,13 +103,14 @@ const LinkTag = props => {
     return (
       <Popconfirm
         title="Do you really want to remove this link?"
-        onConfirm={() => {
+        onConfirm={event => {
           const linkIdsOfActiveElement = linkEditInfo.linkIds;
-          const linkIdsOfClickedElement = isPartOf;
+          const linkIdsOfClickedElement = isPartOf.map(l => l.link);
           const linkId = linkIdsOfActiveElement.filter(value =>
             linkIdsOfClickedElement.includes(value)
           )[0];
           handleRemoveLinkConfirm(identifier, linkId);
+          event.stopPropagation();
         }}
         onCancel={null}
         okText="Yes"
@@ -130,7 +137,7 @@ const LinkTag = props => {
 
   if (linkTagStatus === "POTENTIAL_LINK") {
     return (
-      <Popconfirm
+      <React.Fragment
         title="Do you really want to add this link?"
         onConfirm={e => handleAddLinkConfirm(e, identifier)}
         onCancel={null}
@@ -148,11 +155,39 @@ const LinkTag = props => {
           title={"Click to add link..."}
           onClick={e => {
             e.stopPropagation();
+            setShowNewLinkModal(true);
           }}
         >
           <NodeIndexOutlined /> <PlusOutlined />
         </Tag>
-      </Popconfirm>
+        <Modal
+          title={"Create new link..."}
+          visible={showNewLinkModal}
+          onOk={e => {
+            console.log("on ok", e);
+            handleAddLinkConfirm(e, identifier, relationship);
+          }}
+          onCancel={() => {
+            setShowNewLinkModal(false);
+          }}
+        >
+          <Radio.Group
+            buttonStyle={"solid"}
+            onChange={e => {
+              setRelationship(e.target.value);
+            }}
+          >
+            {Object.keys(relationships).map(r => {
+              const rship = relationships[r];
+              return (
+                <Radio.Button value={r} checked={r === relationship}>
+                  {rship.title}
+                </Radio.Button>
+              );
+            })}
+          </Radio.Group>
+        </Modal>
+      </React.Fragment>
     );
   }
 };

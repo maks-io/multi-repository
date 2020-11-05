@@ -1,10 +1,10 @@
 const { createIdentifier } = require("../services/create-identifier");
-const _ = require("lodash");
 const randomColor = require("randomcolor");
 const { getById } = require("./external-resource-controller");
 const { processResults } = require("../services/process-results");
-const Link = require("../models/Link");
-const { externalApiConfig } = require("../external-apis");
+const { deleteLink } = require("../graphdb/links");
+const { getAllLinks } = require("../graphdb/links");
+const { createLink } = require("../graphdb/links");
 
 exports.fetchLinks = async (req, res) => {
   const apiData = req.body;
@@ -12,7 +12,8 @@ exports.fetchLinks = async (req, res) => {
   console.log("\n/////", "Search Step 2 - Link Logic - START", "/////\n");
 
   try {
-    const links = await Link.find({});
+    // const links = await Link.find({});
+    const links = await getAllLinks();
     const newResources = await applyLinkLogic(apiData, links);
 
     console.log("\n/////", "Search Step 2 - Link Logic - DONE", "/////\n");
@@ -35,16 +36,27 @@ const applyLinkLogic = async (individualResults, links) => {
   );
 
   links.forEach(link => {
-    const linkColor = randomColor(); // TODO temporarily using random color as link identifier
+    const linkNodeOnePlatform = link.node1.platform;
+    const linkNodeOneType = link.node1.type;
+    const linkNodeOneId = link.node1.id;
+    const linkNodeTwoPlatform = link.node2.platform;
+    const linkNodeTwoType = link.node2.type;
+    const linkNodeTwoId = link.node2.id;
+    const relationship = link.relationship;
 
-    const linkNodeOnePlatform = link.nodes[0].platform;
-    const linkNodeOneType = link.nodes[0].type;
-    const linkNodeOneId = link.nodes[0].id;
-    const linkNodeTwoPlatform = link.nodes[1].platform;
-    const linkNodeTwoType = link.nodes[1].type;
-    const linkNodeTwoId = link.nodes[1].id;
+    const linkNodeOneIdentifier = createIdentifier(
+      linkNodeOnePlatform,
+      linkNodeOneType,
+      linkNodeOneId
+    );
+    const linkNodeTwoIdentifier = createIdentifier(
+      linkNodeTwoPlatform,
+      linkNodeTwoType,
+      linkNodeTwoId
+    );
+    const linkColor = linkNodeOneIdentifier + ":::::" + linkNodeTwoIdentifier; // TODO temporarily using random color as link identifier
 
-    const linkString = `${linkNodeOnePlatform}_${linkNodeOneType}_${linkNodeOneId} <---> ${linkNodeTwoPlatform}_${linkNodeTwoType}_${linkNodeTwoId}`;
+    const linkString = `${linkNodeOneIdentifier} <---> ${linkNodeTwoIdentifier}`;
     console.log("[LINK]", linkString);
 
     const platformOne = individualResultsCopy[linkNodeOnePlatform];
@@ -59,9 +71,7 @@ const applyLinkLogic = async (individualResults, links) => {
     const scopeOne = platformOne[linkNodeOneType];
     if (scopeOne) {
       const idArray = scopeOne.filter(
-        i =>
-          i.identifier ===
-          createIdentifier(linkNodeOnePlatform, linkNodeOneType, linkNodeOneId)
+        i => i.identifier === linkNodeOneIdentifier
       );
       if (idArray.length > 0) {
         nodeOne = idArray[0];
@@ -72,9 +82,7 @@ const applyLinkLogic = async (individualResults, links) => {
     const scopeTwo = platformTwo[linkNodeTwoType];
     if (scopeTwo) {
       const idArray = scopeTwo.filter(
-        i =>
-          i.identifier ===
-          createIdentifier(linkNodeTwoPlatform, linkNodeTwoType, linkNodeTwoId)
+        i => i.identifier === linkNodeTwoIdentifier
       );
       if (idArray.length > 0) {
         nodeTwo = idArray[0];
@@ -83,36 +91,51 @@ const applyLinkLogic = async (individualResults, links) => {
 
     if (nodeOne && nodeTwo) {
       console.log("both nodes already available from step 1", nodeOne, nodeTwo);
-      nodeOne.isPartOf.push(linkColor);
+      nodeOne.isPartOf.push({ link: linkColor, relationship });
       nodeOne.isNew = true;
-      nodeTwo.isPartOf.push(linkColor);
+
+      // if (!nodeOne.linksTo) {
+      //   nodeOne.linksTo = [linkNodeTwoIdentifier];
+      // } else {
+      //   nodeOne.linksTo.push(linkNodeTwoIdentifier);
+      // }
+
+      nodeTwo.isPartOf.push({ link: linkColor, relationship });
       nodeTwo.isNew = true;
+
+      // if (!nodeTwo.linksFrom) {
+      //   nodeTwo.linksFrom = [linkNodeOneIdentifier];
+      // } else {
+      //   nodeTwo.linksFrom.push(linkNodeOneIdentifier);
+      // }
     } else if (nodeOne) {
       console.log(
         "left node already available from step 1 -> fetch right node"
       );
-      nodeOne.isPartOf.push(linkColor);
+      nodeOne.isPartOf.push({ link: linkColor, relationship });
       nodeOne.isNew = true;
       promises.push(
         fetchMissingResource(
           linkNodeTwoPlatform,
           linkNodeTwoType,
           linkNodeTwoId,
-          linkColor
+          linkColor,
+          relationship
         )
       );
     } else if (nodeTwo) {
       console.log(
         "right node already available from step 1 -> fetch left node"
       );
-      nodeTwo.isPartOf.push(linkColor);
+      nodeTwo.isPartOf.push({ link: linkColor, relationship });
       nodeTwo.isNew = true;
       promises.push(
         fetchMissingResource(
           linkNodeOnePlatform,
           linkNodeOneType,
           linkNodeOneId,
-          linkColor
+          linkColor,
+          relationship
         )
       );
     } else {
@@ -130,7 +153,9 @@ const applyLinkLogic = async (individualResults, links) => {
     );
   });
 
-  return makeResultsDistinct(individualResultsCopy);
+  const distinctResults = makeResultsDistinct(individualResultsCopy);
+
+  return distinctResults;
 };
 
 const makeResultsDistinct = results => {
@@ -139,6 +164,12 @@ const makeResultsDistinct = results => {
       i => i.identifier === item.identifier
     );
     if (alreadyExistingItems.length > 0) {
+      console.log(
+        "alreadyExistingItems[0].isPartOf",
+        alreadyExistingItems[0].isPartOf
+      );
+      console.log("=>", item.isPartOf);
+
       alreadyExistingItems[0].isPartOf = [
         ...alreadyExistingItems[0].isPartOf,
         ...item.isPartOf
@@ -149,8 +180,8 @@ const makeResultsDistinct = results => {
   });
 };
 
-const fetchMissingResource = (platform, type, id, groupId) => {
-  return getById(platform, type, id, groupId);
+const fetchMissingResource = (platform, type, id, groupId, relationship) => {
+  return getById(platform, type, id, groupId, relationship);
 };
 
 exports.postLink = async (req, res) => {
@@ -158,8 +189,9 @@ exports.postLink = async (req, res) => {
   const apiData = req.body;
 
   try {
-    const nodes = [apiData.node1, apiData.node2];
-    await Link.create({ nodes });
+    // const nodes = [apiData.node1, apiData.node2];
+    // await Link.create({ nodes });
+    await createLink(apiData);
 
     // link creation was successful
     const linkColor = randomColor();
@@ -176,26 +208,9 @@ exports.postLink = async (req, res) => {
 exports.deleteLink = async (req, res) => {
   console.log("Delete link...", "start");
   const apiData = req.body;
-  const { node1, node2 } = apiData;
 
   try {
-    const query = {
-      $and: [
-        {
-          nodes: {
-            $elemMatch: node1
-          }
-        },
-        {
-          nodes: {
-            $elemMatch: node2
-          }
-        }
-      ]
-    };
-    const deleteResult = await Link.findOneAndDelete(query);
-
-    console.log("deleteResult:", deleteResult);
+    await deleteLink(apiData);
 
     console.log("Delete new link...", "done");
     res.sendStatus(200);

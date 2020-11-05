@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import LineTo from "react-lineto";
 import { Card } from "antd";
 import LinkTag from "./comps/link-tag";
 import SourceTag from "./comps/source-tag";
@@ -10,27 +11,31 @@ import { colors } from "../../../../../../colors";
 class ResultItem extends Component {
   shouldComponentUpdate(nextProps, nextState, nextContext) {
     const {
+      loadingStep: loadingStepNew,
       mode: modeNew,
       focusInfo: focusInfoNew,
       linkTagStatus: linkTagStatusNew,
       isHighlighted: isHighlightedNew,
-      hoverStyle: hoverStyleNew
+      hoverStyle: hoverStyleNew,relationships:relationshipsNew
     } = nextProps;
 
     const {
+      loadingStep,
       mode,
       focusInfo,
       linkTagStatus,
       isHighlighted,
-      hoverStyle
+      hoverStyle,relationships
     } = this.props;
 
     if (
+      JSON.stringify(loadingStepNew) !== JSON.stringify(loadingStep) ||
       JSON.stringify(modeNew) !== JSON.stringify(mode) ||
       JSON.stringify(focusInfoNew) !== JSON.stringify(focusInfo) ||
       JSON.stringify(linkTagStatusNew) !== JSON.stringify(linkTagStatus) ||
       JSON.stringify(isHighlightedNew) !== JSON.stringify(isHighlighted) ||
-      JSON.stringify(hoverStyleNew) !== JSON.stringify(hoverStyle)
+      JSON.stringify(hoverStyleNew) !== JSON.stringify(hoverStyle)||
+      JSON.stringify(relationshipsNew) !== JSON.stringify(relationships)
     ) {
       return true;
     }
@@ -39,10 +44,10 @@ class ResultItem extends Component {
 
   render() {
     const {
+      isLoading,
       resultStructure,
       data,
       fallbackAvatar,
-      fetchStep,
       index,
       platform,
       type,
@@ -57,7 +62,9 @@ class ResultItem extends Component {
       mode,
       linkTagStatus,
       isHighlighted,
-      hoverStyle
+      hoverStyle,
+      relationships,
+      loadingStep
     } = this.props;
 
     if (mode === constants.mode.FOCUS) {
@@ -66,99 +73,126 @@ class ResultItem extends Component {
         if (focusInfo.identifier !== data.identifier) {
           return null;
         }
-      } else if (!data.isPartOf.some(r => focusInfo.linkIds.includes(r))) {
+      } else if (!data.isPartOf.some(r => focusInfo.linkIds.includes(r.link))) {
         return null;
       }
     }
 
     return (
-      <Card
-        size="small"
-        style={{
-          borderRadius: "0.5rem",
-          margin: "0.3rem",
-          cursor: "pointer",
-          borderWidth: 7,
-          borderColor: isHighlighted
-            ? colors.Focus
-            : linkTagStatus === "ACTIVE"
-            ? colors.EditLinks
-            : linkTagStatus === "POTENTIAL_LINK"
-            ? colors.AddLink
-            : linkTagStatus === "LINKED_ITEM"
-            ? colors.RemoveLink
-            : "transparent",
-          ...hoverStyle
-        }}
-        bodyStyle={{ padding: "0.3rem" }}
-        onMouseEnter={() => handleHoverItem(data.identifier, data.isPartOf)}
-        onMouseLeave={() => handleHoverItem(undefined)}
-        onClick={() => handleClickItem(data.identifier, data.isPartOf)}
-      >
-        <div
+      <div style={{ display: "flex", justifyContent: "flex" }}>
+        <Card
+          className={`card-for-${identifier}`}
+          size="small"
           style={{
-            display: "flex",
-            flexDirection: "row"
+            zIndex: 2,
+            borderRadius: "0.5rem",
+            margin: "0.3rem",
+            cursor: "pointer",
+            borderWidth: 7,
+            borderColor: isHighlighted
+              ? colors.Focus
+              : linkTagStatus === "ACTIVE"
+              ? colors.EditLinks
+              : linkTagStatus === "POTENTIAL_LINK"
+              ? colors.AddLink
+              : linkTagStatus === "LINKED_ITEM"
+              ? colors.RemoveLink
+              : "transparent",
+            ...hoverStyle
           }}
+          bodyStyle={{ padding: "0.3rem" }}
+          onMouseEnter={() => handleHoverItem(data.identifier, data.isPartOf)}
+          onMouseLeave={() => handleHoverItem(undefined)}
+          onClick={() => handleClickItem(data.identifier, data.isPartOf)}
         >
           <div
-            style={{
-              width: "1.5rem",
-              fontWeight: "bold",
-              backgroundColor: "grey",
-              color: "white",
-              borderRadius: "0.3rem",
-              opacity: 0.6
-            }}
-          >
-            {index + 1}.
-          </div>
-          <div
+            title={`my identifier is: ${identifier}`} // TODO
             style={{
               display: "flex",
-              flexDirection: "column",
-              flex: 1,
-              alignItems: "center"
+              flexDirection: "row"
             }}
           >
-            <div style={{ fontWeight: "bold", wordBreak: "break-all" }}>
-              <ResultItemTitleAndHeader
-                resultStructure={resultStructure}
-                platform={platform}
-                type={type}
-                data={data}
-                fallbackAvatar={fallbackAvatar}
-              />
-            </div>
             <div
-              className="tags"
               style={{
-                display: "flex",
-                flexDirection: "row",
-                flex: 1,
-                alignItems: "center",
-                margin: "0.2rem"
+                width: "1.5rem",
+                fontWeight: "bold",
+                backgroundColor: "grey",
+                color: "white",
+                borderRadius: "0.3rem",
+                opacity: 0.6
               }}
             >
-              <LinkTag
-                fetchStep={fetchStep}
-                nrOfLinks={data.isPartOf ? data.isPartOf.length : 0}
-                platform={platform}
-                type={type}
-                identifier={identifier}
-                handleLinkTagClick={handleLinkTagClick}
-                linkEditInfo={linkEditInfo}
-                isPartOf={data.isPartOf}
-                handleRemoveLinkConfirm={handleRemoveLinkConfirm}
-                handleAddLinkConfirm={handleAddLinkConfirm}
-                linkTagStatus={linkTagStatus}
-              />
-              <SourceTag fetchStep={fetchStep} data={data} />
-              <OriginalSourceTag platform={platform} type={type} data={data} />
+              {index + 1}.
+            </div>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                flex: 1,
+                alignItems: "center"
+              }}
+            >
+              <div style={{ fontWeight: "bold", wordBreak: "break-all" }}>
+                <ResultItemTitleAndHeader
+                  resultStructure={resultStructure}
+                  platform={platform}
+                  type={type}
+                  data={data}
+                  fallbackAvatar={fallbackAvatar}
+                />
+              </div>
+              <div
+                className="tags"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  flex: 1,
+                  alignItems: "center",
+                  margin: "0.2rem"
+                }}
+              >
+                <LinkTag
+                  loadingStep={loadingStep}
+                  nrOfLinks={data.isPartOf ? data.isPartOf.length : 0}
+                  platform={platform}
+                  type={type}
+                  identifier={identifier}
+                  handleLinkTagClick={handleLinkTagClick}
+                  linkEditInfo={linkEditInfo}
+                  isPartOf={data.isPartOf}
+                  handleRemoveLinkConfirm={handleRemoveLinkConfirm}
+                  handleAddLinkConfirm={handleAddLinkConfirm}
+                  linkTagStatus={linkTagStatus}
+                  relationships={relationships}
+                />
+                <SourceTag loadingStep={loadingStep} data={data} />
+                <OriginalSourceTag
+                  platform={platform}
+                  type={type}
+                  data={data}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </Card>
+        </Card>{/*
+        {relations.map(r => (
+          <LineTo
+            from={`card-for-${identifier}`}
+            to={`card-for-${r.targetId}`}
+            borderWidth={5}
+            borderColor={r.color}
+            onClick={() => {
+              console.log("test clisck");
+            }}
+            onMouseEnter={() => {
+              console.log("onMouseEnter");
+            }}
+            onMouseLeave={() => {
+              console.log("onMouseLeave");
+            }}
+          />
+        ))}*/}
+      </div>
     );
   }
 }

@@ -130,7 +130,7 @@ const externalApiConfig = {
         }
       }
     },
-    PROJECT: {
+    /*PROJECT: {
       LOGO_URL:
         "https://about.gitlab.com/images/press/logo/png/gitlab-logo-gray-rgb.png",
       SEARCH_BY_TERM: {
@@ -168,7 +168,7 @@ const externalApiConfig = {
           }
         }
       }
-    }
+    }*/
   },
   TISS: {
     PERSON: {
@@ -229,11 +229,13 @@ const externalApiConfig = {
         },
         RESULT: {
           PATH: "project",
-          TRANSFORM_FUNCTION: result => ({
-            id: result.titleEn,
-            title: result.titleEn,
-            originalSourceUrl: `https://tiss.tuwien.ac.at/fpl/project/index.xhtml?id=${result.projectId}`
-          }),
+          TRANSFORM_FUNCTION: result => {
+            return {
+              id: result.id,
+              title: result.titleEn,
+              originalSourceUrl: `https://tiss.tuwien.ac.at/fpl/project/index.xhtml?id=${result.id}`
+            };
+          },
           STRUCTURE: {
             id: "id",
             title: "title",
@@ -249,7 +251,7 @@ const externalApiConfig = {
           PATH: "project",
           TRANSFORM_FUNCTION: result => {
             return {
-              id: result.titleEn,
+              id: result.id,
               title: result.titleEn,
               originalSourceUrl: `https://tiss.tuwien.ac.at/fpl/project/index.xhtml?id=${result.id}`
             };

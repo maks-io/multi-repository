@@ -2,7 +2,9 @@ const path = require("path");
 const fs = require("fs");
 const mongoose = require("mongoose");
 const _ = require("lodash");
-require("dotenv").config();
+
+const dotenv = require("dotenv");
+dotenv.config();
 
 const { DB_NAME, DB_USERNAME, DB_PASSWORD } = process.env;
 
@@ -13,10 +15,12 @@ console.log("DB_URL", DB_URL);
 mongoose.connect(DB_URL);
 
 const Link = require("../models/Link");
+const {createMultipleLinks} = require("../graphdb/links");
+const { deleteAllLinks } = require("../graphdb/links");
 
 async function deleteData() {
   console.log("Deleting data...");
-  await Link.remove();
+  await deleteAllLinks();
   console.log("...done!");
   process.exit();
 }
@@ -27,9 +31,11 @@ async function loadData() {
   );
 
   const links = sampleLinks;
+  console.log("linksssssss",links)
 
   try {
-    await Link.insertMany(links);
+    // await Link.insertMany(links);
+    await createMultipleLinks(links)
     console.log("...done!");
     process.exit();
   } catch (e) {

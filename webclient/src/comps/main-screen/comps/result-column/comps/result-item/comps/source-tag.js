@@ -3,10 +3,10 @@ import { Tag } from "antd";
 import { GoldFilled } from "@ant-design/icons";
 
 const SourceTag = props => {
-  const { fetchStep, data } = props;
+  const { laodingStep, data } = props;
 
   const stepNr =
-    fetchStep === 0
+    laodingStep === 0
       ? "1"
       : data.isNew && data.isOld
       ? "1+2"

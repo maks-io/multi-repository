@@ -7,10 +7,7 @@
     "cm": "git-cz",
     "server": "npm run start --prefix server",
     "webclient": "npm run start --prefix webclient",
-    "dev": "concurrently \"npm run server \" \"npm run webclient\"",
-    "blowitallaway": "node server/src/data/load-sample-data.js --delete",
-    "sample": "node server/src/data/load-sample-data.js",
-    "resample": "node server/src/data/load-sample-data.js --delete && node server/src/data/load-sample-data.js"
+    "dev": "concurrently \"npm run server \" \"npm run webclient\""
   },
   "repository": {
     "type": "git",
