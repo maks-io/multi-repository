@@ -67,9 +67,6 @@ class ResultItem extends Component {
       loadingStep
     } = this.props;
 
-    console.log("data.ispartof",data.isPartOf)
-    console.log("focusInfo.linkIds",focusInfo.linkIds)
-
     if (mode === constants.mode.FOCUS) {
       // some item is focused!
       if (focusInfo.linkIds.length === 0) {
@@ -80,14 +77,6 @@ class ResultItem extends Component {
         return null;
       }
     }
-
-    if (data.isPartOf.length > 0) {
-      console.log("le link data", data);
-    }
-    // console.log("identifier", identifier);
-
-
-    // console.log("le relations are", relations);
 
     return (
       <div style={{ display: "flex", justifyContent: "flex" }}>

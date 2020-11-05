@@ -16,9 +16,6 @@ exports.fetchLinks = async (req, res) => {
     const links = await getAllLinks();
     const newResources = await applyLinkLogic(apiData, links);
 
-    console.log("the links are:", JSON.stringify(links, null, 2));
-    // console.log("the newResources are:", JSON.stringify(newResources, null, 2));
-
     console.log("\n/////", "Search Step 2 - Link Logic - DONE", "/////\n");
 
     return res.json(newResources);
@@ -150,11 +147,6 @@ const applyLinkLogic = async (individualResults, links) => {
   });
 
   const newResourcesCollection = await Promise.all(promises);
-  console.log(
-    "new resources coll",
-    newResourcesCollection.map(nr => nr.isPartOf)
-  );
-
   newResourcesCollection.forEach(newResource => {
     individualResultsCopy[newResource.platform][newResource.type].push(
       newResource

@@ -1,21 +1,8 @@
-//Executing a sparql update query
 const {
   getGraphDBRDFRepositoryClient
 } = require("./graphdb-RDFRepositoryClient");
 const { UpdateQueryPayload } = require("graphdb").query;
 const { QueryContentType } = require("graphdb").http;
-
-/*
-// useful link:
-// https://docs.marklogic.com/guide/semantics/sparql-update
-const q = `
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-INSERT DATA
-{
-  rdf:aha rdf:title rdf:hi2
-}
-`;
-*/
 
 const prefixKeyDefault = "rdf";
 const prefixValueDefault = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
@@ -37,7 +24,7 @@ const createWriteQuery = (
     throw new Error("Object of query is undefined");
   }
 
- return `
+  return `
            PREFIX ${prefixKey}: <${prefixValue}>
            INSERT DATA
            {
@@ -45,14 +32,6 @@ const createWriteQuery = (
            }
 
         `;
-
- //return `
- //          PREFIX ${prefixKey}: <${prefixValue}>
- //          INSERT DATA
- //          {
- //            ${subject} ${predicate} ${obj}
- //          }
- //       `;
 };
 
 const createWritePayload = writeQuery => {
@@ -73,7 +52,6 @@ const writeToDB = async (subject, predicate, obj) => {
     console.log("Writing to GraphDB - SUCCESS");
   } catch (error) {
     console.error("Writing to GraphDB - ERROR");
-    // console.error("Writing to GraphDB - ERROR:", error);
   }
 };
 
@@ -83,18 +61,11 @@ const clearDB = async () => {
   const payload = createWritePayload(query);
 
   try {
-    const result = await repository.update(payload);
+    await repository.update(payload);
     console.log("Clearing GraphDB - SUCCESS");
   } catch (error) {
     console.error("Clearing GraphDB - ERROR" + error);
-    // console.error("Writing to GraphDB - ERROR:", error);
   }
 };
 
 module.exports = { writeToDB, clearDB };
-/*
-
-return repository.update(payload).then(() => {
-  // repository should have been updated at this point
-});
-*/

@@ -8,9 +8,19 @@ I have built this as part of a project at [TU Wien](https://www.tuwien.at/), the
 
 ## Demonstration Video / Screencast
 
-An introduction screencast I did [can be found on youtube](https://youtu.be/CmU5vkxWqTg):
+A screencast I did can be found on youtube:
+ 
+[Part 1/3](https://youtu.be/CmU5vkxWqTg):
 
-[![Demonstration Screencast](http://img.youtube.com/vi/CmU5vkxWqTg/0.jpg)](http://www.youtube.com/watch?v=CmU5vkxWqTg "Multi Repository - Presentation/Screencast")
+[![Demonstration Screencast](http://img.youtube.com/vi/CmU5vkxWqTg/0.jpg)](http://www.youtube.com/watch?v=CmU5vkxWqTg "Multi Repository - Presentation/Screencast - Part 1/3")
+
+[Part 2/3](https://youtu.be/wlOsTP60ZAg):
+
+[![Demonstration Screencast](http://img.youtube.com/vi/wlOsTP60ZAg/0.jpg)](http://www.youtube.com/watch?v=wlOsTP60ZAg "Multi Repository - Presentation/Screencast - Part 2/3")
+
+[Part 3/3](https://youtu.be/RkooAp8vNG8):
+
+[![Demonstration Screencast](http://img.youtube.com/vi/RkooAp8vNG8/0.jpg)](http://www.youtube.com/watch?v=RkooAp8vNG8 "Multi Repository - Presentation/Screencast - Part 3/3")
 
 ## Features
 
@@ -54,17 +64,15 @@ More information on how to use them in the section [Usage](#usage).
 
 The following steps are necessary to use this application:
 
-1. Create a mongo database you have read and write access to. I used [mlab.com](https://mlab.com/), for instance.
-   Remember the database url, as well as the necessary user name and password.
+1. Create a [Ontotext GraphDB](https://www.ontotext.com/products/graphdb/) instance you have read and write access to.
 2. Create a `.env` environment file.
    It must contain the following variables:
 
 ```
-DB_NAME={YOUR_DATABASE_URL_MENTIONED_ABOVE}
-DB_USERNAME={YOUR_DATABASE_USER_NAME_MENTIONED_ABOVE}
-DB_PASSWORD={YOUR_DATABASE_PASSWORD_MENTIONED_ABOVE}
-GITLAB_USER_TOKEN={YOUR_GITLAB_API_ACCESS_TOKEN} // optional, see below
-GITLAB_REPO_TOKEN={YOUR_GITLAB_API_ACCESS_TOKEN} // optional, see below
+GRAPHDB_BASE_URL={YOUR_GRAPHDB_INSTANCE_BASE_URL}
+GRAPHDB_REPOSITORY_NAME={YOUR_GRAPHDB_INSTANCE_REPOSITORY_NAME}
+TOKEN_GITLAB_PROJECT={YOUR_GITLAB_API_ACCESS_TOKEN} // optional, see below
+TOKEN_GITLAB_PERSON={YOUR_GITLAB_API_ACCESS_TOKEN} // optional, see below
 ...
 ```
 

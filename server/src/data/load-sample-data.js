@@ -20,7 +20,6 @@ const { deleteAllLinks } = require("../graphdb/links");
 
 async function deleteData() {
   console.log("Deleting data...");
-  // await Link.remove();
   await deleteAllLinks();
   console.log("...done!");
   process.exit();

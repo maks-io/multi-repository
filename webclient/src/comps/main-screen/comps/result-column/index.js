@@ -119,18 +119,14 @@ class ResultColumn extends Component {
 
                     const relations = i.isPartOf
                       .map(p => {
-                        console.log("LALALA", p);
                         const linkNodes = p.link.split(":::::");
                         const nodeOneIdentifier = linkNodes[0];
                         const nodeTwoIdentifier = linkNodes[1];
-                        // console.log("le link nodes are", linkNodes);
-                        // console.log("le link idenfier is", identifier);
+
                         if (nodeOneIdentifier === i.identifier) {
-                          // console.log("le link HIIIIIII", identifier);
                           const { relationship: r } = p;
                           const relationship = relationships[r];
                           const { color } = relationship;
-                          console.log("color is", color);
 
                           return {
                             targetId: nodeTwoIdentifier,

@@ -48,4 +48,4 @@ const GraphDBRepository = () => {
   return serverClient.getRepository(GRAPHDB_REPOSITORY_NAME, config);
 };
 
-module.exports = { initGraphDBServerClient, GraphDB,GraphDBRepository };
+module.exports = { initGraphDBServerClient, GraphDB, GraphDBRepository };
