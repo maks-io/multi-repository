@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "dotenv": "^8.2.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "mongoose": "^5.8.11",
     "randomcolor": "^0.5.4"
   }
